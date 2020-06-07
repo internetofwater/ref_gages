@@ -16,3 +16,36 @@ get_nwis_gage_locations <- function(nwis_gage) {
            provider_id)
   
 }
+
+get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline) {
+  all_gages$nhdpv2_REACHCODE <- NA
+  all_gages$nhdpv2_REACH_measure <- NA
+  all_gages$nhdpv2_COMID <- NA
+  
+  for(hl in hydrologic_locations) {
+    
+    hl$locations <- hl$locations[hl$locations$provider_id %in% all_gages$provider_id, ]
+    
+    provider_selector <- all_gages$provider %in% hl$provider
+    
+    matcher <- match(hl$locations$provider_id,
+                     all_gages$provider_id[provider_selector]
+                     )
+    
+    all_gages$nhdpv2_REACHCODE[provider_selector][matcher] <- 
+      hl$locations$nhdpv2_REACHCODE
+    all_gages$nhdpv2_REACH_measure[provider_selector][matcher] <- 
+      hl$locations$nhdpv2_REACH_measure
+    all_gages$nhdpv2_COMID[provider_selector][matcher] <- 
+      hl$locations$nhdpv2_COMID
+  }
+  
+  no_location <- which(is.na(all_gages$nhdpv2_COMID))
+  new_hl <- all_gages[no_location, ]
+  
+  new_hl <- nhdplusTools::get_flowline_index(nhdpv2_fline, 
+                                             new_hl, 
+                                             search_radius = 20)
+  
+  all_gages
+}
