@@ -4,6 +4,7 @@ library(sf)
 library(nhdplusTools)
 library(dataRetrieval)
 library(sbtools)
+library(readr)
 
 sourced <- sapply(list.files("R", pattern = "*.R", full.names = TRUE), source)
 
@@ -40,6 +41,13 @@ plan <- drake_plan(
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
            locations = nhdpv2_gage)),
-    nhdpv2_fline = nhdpv2_fline_proc))
+    nhdpv2_fline = nhdpv2_fline_proc),
+  
+  # Each entry will have a provider and provider_id that acts as a unique
+  # primary key. The existing registry file will have a unique attribute
+  # that contains that primary key. 
+  registry = build_registry(list(nwis_gage_locations),
+                            registry = "reg/ref_gages.csv",
+                            providers = "reg/providers.csv"))
 
 make(plan, memory_strategy = "autoclean", garbage_collection = TRUE)
