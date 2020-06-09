@@ -1,0 +1,30 @@
+write_reference <- function(gage_hydrologic_locations, registry, providers, reference_file, nldi_file) {
+
+  out <- gage_hydrologic_locations %>%
+    mutate(identifier = paste0(provider, provider_id)) %>%
+    left_join(select(convert_provider_id(registry, providers), 
+                     uri, identifier), by = "identifier") %>%
+    select(uri, name, description, subjectOf, provider, provider_id, nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID)
+  
+  write_sf(out, reference_file)
+  
+  unlink(nldi_file)
+  write_sf(out, nldi_file)
+  
+  out
+}
+
+write_registry <- function(registry, registry_file) {
+  write_csv(registry, registry_file)
+  
+  registry_file
+}
+
+convert_provider_id <- function(registry, providers) {
+  rename(registry, prov_id = provider) %>%
+  left_join(select(providers, prov_id = id, provider), 
+            by = "prov_id") %>%
+    mutate(identifier = paste0(provider, provider_id)) %>%
+    mutate(uri = paste0("https://geoconnex.us/ref/gages/", id)) %>%
+    select(-prov_id, -id)
+}

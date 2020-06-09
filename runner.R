@@ -6,6 +6,11 @@ library(dataRetrieval)
 library(sbtools)
 library(readr)
 
+registry_file <- "reg/ref_gages.csv"
+reference_file <- "out/ref_gages.gpkg"
+pid_file <- "out/ref_gages_pid.csv"
+nldi_file <- "out/nldi_gages.geojson"
+
 sourced <- sapply(list.files("R", pattern = "*.R", full.names = TRUE), source)
 
 plan <- drake_plan(
@@ -21,7 +26,7 @@ plan <- drake_plan(
   nwis_gage = get_nwis_sites(),
   
   # this function filters and renames NWIS Gage Locations
-  nwis_gage_locations = get_nwis_gage_locations(nwis_gage),
+  gage_locations = get_nwis_gage_locations(nwis_gage),
   
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
@@ -37,7 +42,7 @@ plan <- drake_plan(
   # The order that hydrologic locations sources are provided will determine
   # precidence -- last defined wins.
   gage_hydrologic_locations = get_hydrologic_locations(
-    all_gages = nwis_gage_locations,
+    all_gages = gage_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
            locations = nhdpv2_gage)),
@@ -46,8 +51,11 @@ plan <- drake_plan(
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  registry = build_registry(list(nwis_gage_locations),
-                            registry = "reg/ref_gages.csv",
-                            providers = "reg/providers.csv"))
+  providers = read_csv("reg/providers.csv"),
+  registry = build_registry(list(gage_locations),
+                            registry = registry_file,
+                            providers = providers),
+ reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
+ registry_out = write_registry(registry, registry_file))
 
 make(plan, memory_strategy = "autoclean", garbage_collection = TRUE)
