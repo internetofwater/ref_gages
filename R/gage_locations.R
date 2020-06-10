@@ -45,7 +45,11 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
   
   new_hl <- nhdplusTools::get_flowline_index(nhdpv2_fline, 
                                              new_hl, 
-                                             search_radius = 20)
+                                             search_radius = 100)
+  
+  all_gages$nhdpv2_REACHCODE[no_location] <- new_hl$REACHCODE
+  all_gages$nhdpv2_REACH_measure[no_location] <- new_hl$REACH_meas
+  all_gages$nhdpv2_COMID[no_location] <- new_hl$COMID
   
   all_gages
 }

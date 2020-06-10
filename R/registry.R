@@ -6,8 +6,10 @@ build_registry <- function(gage_list, registry, providers) {
     
     gl <- select(convert_coords(gl), provider = provider_int, provider_id)
     
-    if(nrow(reg) > 0) {
+    if(nrow(reg) < nrow(gl)) {
       stop("Need to implement duplicate checks.")
+    } else if(nrow(reg) == nrow(gl)) {
+      return(reg)
     } else {
       reg$id <- as.numeric(reg$id)
       reg$provider <- as.numeric(reg$provider)
