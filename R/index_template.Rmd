@@ -1,0 +1,24 @@
+---
+title: "Reference Gages Index"
+output: html_document
+params:
+  name: !r "01"
+  ref: !r NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+This index provides access to all reference gage locations in `r params$name`
+
+```{r map}
+mapview::mapview(params$ref)
+```
+
+
+```{r pressure}
+knitr::kable(sf::st_drop_geometry(dplyr::select(
+  params$ref, uri, description, subjectOf
+  )))
+```

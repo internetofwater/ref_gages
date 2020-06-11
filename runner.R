@@ -5,13 +5,16 @@ library(nhdplusTools)
 library(dataRetrieval)
 library(sbtools)
 library(readr)
+library(knitr)
+library(mapview)
 
 registry_file <- "reg/ref_gages.csv"
 reference_file <- "out/ref_gages.gpkg"
 pid_file <- "out/ref_gages_pid.csv"
 nldi_file <- "out/nldi_gages.geojson"
+index_dir <- "docs/"
 
-sourced <- sapply(list.files("R", pattern = "*.R", full.names = TRUE), source)
+sourced <- sapply(list.files("R", pattern = "*.R$", full.names = TRUE), source)
 
 plan <- drake_plan(
   # NHDPlusV2 downloaded with nhdplusTools
@@ -56,6 +59,7 @@ plan <- drake_plan(
                             registry = registry_file,
                             providers = providers),
  reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
- registry_out = write_registry(registry, registry_file))
+ registry_out = write_registry(registry, registry_file),
+ index = build_index(reference_out, index_dir))
 
 make(plan, memory_strategy = "autoclean", garbage_collection = TRUE)
