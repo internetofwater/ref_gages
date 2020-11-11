@@ -12,6 +12,8 @@ build_registry <- function(gage_list, registry, providers) {
                           !paste0(gl$provider, gl$provider_id) %in% 
                             paste0(reg$provider, reg$provider_id))
       
+      gl$id <- seq(max(reg$id), (max(reg$id) + nrow(gl) - 1))
+      
       message(paste("Adding", nrow(gl), "to the registry."))
       
     } else if(nrow(reg) == nrow(gl)) {

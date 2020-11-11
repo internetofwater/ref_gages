@@ -10,8 +10,14 @@ library(mapview)
 
 registry_file <- "reg/ref_gages.csv"
 reference_file <- "out/ref_gages.gpkg"
+
+# These are generated for a USGS namespace in geoconnex.
+usgs_reference_file <- "out/usgs_gages.gpkg"
+usgs_nldi_file <- "out/usgs_nldi_gages.geojson"
+
 pid_file <- "out/ref_gages_pid.csv"
 nldi_file <- "out/nldi_gages.geojson"
+
 index_dir <- "docs/"
 
 sourced <- sapply(list.files("R", pattern = "*.R$", full.names = TRUE), source)
@@ -62,6 +68,10 @@ plan <- drake_plan(
   registry = build_registry(list(gage_locations),
                             registry = registry_file,
                             providers = providers),
+  
+  # Creates an output for USGS namespace reference locations
+  usgs_reference_out = write_usgs_reference(gage_hydrologic_locations, registry, providers, usgs_reference_file, usgs_nldi_file),
+  
  reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
  registry_out = write_registry(registry, registry_file),
  index = build_index(reference_out, index_dir))
