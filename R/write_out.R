@@ -35,7 +35,7 @@ build_index <- function(reference, index_dir) {
   
   reference <- st_join(reference, select(states, state = id))
   
-  for(st in states$id) {
+  for(st in states$STATEFP) {
     gages <- filter(reference, .data$state == st) %>%
       select(uri, description, subjectOf) %>%
       mutate(uri = make_link(uri), subjectOf = make_link(subjectOf))

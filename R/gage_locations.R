@@ -1,10 +1,15 @@
-get_nwis_gage_locations <- function(nwis_gage) {
+get_nwis_gage_locations <- function(nwis_gage, streamstats_sites) {
   
-  gages <- dplyr::filter(nwis_gage, site_tp_cd == "ST" & 
+  gages <- dplyr::filter(nwis_gage, (site_tp_cd == "ST" | 
+                                       site_tp_cd == "ST-CA" |
+                                       site_tp_cd == "ST-DCH" |
+                                       site_tp_cd == "ST-TS" |
+                                       site_tp_cd == "ES" |
+                                       site_tp_cd == "LK") & 
                            !is.na(dec_long_va) & 
                            !is.na(dec_lat_va)) %>%
     st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = 4326) %>%
-    mutate(description = paste0("USGS NWIS Stream/River Site ", site_no, ": ", station_nm),
+    mutate(description = paste0("USGS NWIS Stream/River/Lake Site ", site_no, ": ", station_nm),
            subjectOf = paste0("https://waterdata.usgs.gov/monitoring-location/", site_no),
            uri = paste0("https://geoconnex.us/ref/gages/", n()),
            provider = "https://waterdata.usgs.gov",
@@ -15,6 +20,7 @@ get_nwis_gage_locations <- function(nwis_gage) {
            provider,
            provider_id)
   
+  # streamstats_only <- dplyr::filter(streamstats_sites, !code %in% gages$provider_id)
 }
 
 get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline) {

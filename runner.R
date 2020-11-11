@@ -28,8 +28,12 @@ plan <- drake_plan(
   # This function downloads all NWIS sites from the site file
   nwis_gage = get_nwis_sites(),
   
+  
+  # This functions loads locally stored streamstats sites.
+  streamstats_sites = get_streamstats_sites(),
+  
   # this function filters and renames NWIS Gage Locations
-  gage_locations = get_nwis_gage_locations(nwis_gage),
+  gage_locations = get_nwis_gage_locations(nwis_gage, streamstats_sites),
   
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
