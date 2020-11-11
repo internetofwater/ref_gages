@@ -1,6 +1,6 @@
 # Reference stream gages for geoconnex.us
 
-This repository houses workflow software for compilation of community reference stream gages. The output of this workflow will generate Persistent Identifiers for the [geoconnex.us system](https://github.com/internetofwater/geoconnex.us), reference landing page content for the [info.geonconnex.us system](https://info.geoconnex.us/), and a set of best available network locations for the [Network Linked Data Index](https://labs.waterdata.usgs.gov/about-nldi/index.html).
+This repository houses workflow software for compilation of community reference stream gages. The output of this workflow will generate Persistent Identifiers for the [geoconnex.us system](https://github.com/internetofwater/geoconnex.us), reference landing page content for the [info.geoconnex.us system](https://info.geoconnex.us/), and a set of best available network locations for the [Network Linked Data Index](https://labs.waterdata.usgs.gov/about-nldi/index.html).
 
 These reference locations are intended to be a shared community resource that anyone can contribute to. If a reference location does not exist and data are collected there, the location can and should be contributed such that others can reference the location.
 
