@@ -10,6 +10,9 @@ get_nwis_gage_locations <- function(nwis_gage, streamstats_sites) {
                                        site_tp_cd == "LK") & 
                            !is.na(dec_long_va) & 
                            !is.na(dec_lat_va)) %>%
+    select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) %>%
+    group_by(site_no) %>% arrange(drain_area_va) %>%
+    filter(n() == 1) %>% ungroup() %>%
     st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = 4326) %>%
     mutate(description = paste0("USGS NWIS Stream/River/Lake Site ", site_no, ": ", station_nm),
            subjectOf = paste0("https://waterdata.usgs.gov/monitoring-location/", site_no),

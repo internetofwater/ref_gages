@@ -65,15 +65,15 @@ plan <- drake_plan(
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
   providers = read_csv("reg/providers.csv"),
-  registry = build_registry(list(gage_locations),
+  registry = build_registry(gage_locations,
                             registry = registry_file,
                             providers = providers),
   
   # Creates an output for USGS namespace reference locations
   usgs_reference_out = write_usgs_reference(gage_hydrologic_locations, registry, providers, usgs_reference_file, usgs_nldi_file),
   
- reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
- registry_out = write_registry(registry, registry_file),
- index = build_index(reference_out, index_dir))
+  reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
+  registry_out = write_registry(registry, registry_file),
+  index = build_index(reference_out, index_dir))
 
-make(plan, memory_strategy = "autoclean", garbage_collection = TRUE)
+make(plan, memory_strategy = "autoclean", garbage_collection = TRUE, lock_envir = FALSE)

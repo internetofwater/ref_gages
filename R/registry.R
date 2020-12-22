@@ -1,4 +1,7 @@
 build_registry <- function(gage_list, registry, providers) {
+  
+  gage_list <- list(gage_list)
+  
   reg <- read_csv(registry)
   
   for(gl in gage_list) {
@@ -6,8 +9,19 @@ build_registry <- function(gage_list, registry, providers) {
     
     gl <- select(convert_coords(gl), provider = provider_int, provider_id)
     
-    if(nrow(reg) < nrow(gl)) {
+    if(nrow(reg) == 1) {
+      message("initialize")
+      
+      reg$id <- as.numeric(reg$id)
+      reg$provider <- as.numeric(reg$provider)
+      gl$id <- 1000000 + c(1:nrow(gl))
+      
+    } else if(nrow(reg) < nrow(gl)) {
 
+      gl <- distinct(gl)
+      
+      if(any(duplicated(gl$provider_id))) stop("found duplicate ids")
+      
       gl <- dplyr::filter(gl, 
                           !paste0(gl$provider, gl$provider_id) %in% 
                             paste0(reg$provider, reg$provider_id))
@@ -19,9 +33,7 @@ build_registry <- function(gage_list, registry, providers) {
     } else if(nrow(reg) == nrow(gl)) {
       return(reg)
     } else {
-      reg$id <- as.numeric(reg$id)
-      reg$provider <- as.numeric(reg$provider)
-      gl$id <- 1000000 + c(1:nrow(gl))
+      stop("gl should not be shorter than reg.")
     }
     
     reg <- bind_rows(reg, gl)
