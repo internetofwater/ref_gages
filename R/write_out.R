@@ -57,16 +57,18 @@ build_index <- function(reference, index_dir) {
   
   reference <- st_join(reference, select(states, state = id))
   
-  for(st in states$STATEFP) {
+  for(st in states$id) {
     gages <- filter(reference, .data$state == st) %>%
       select(uri, description, subjectOf) %>%
       mutate(uri = make_link(uri), subjectOf = make_link(subjectOf))
     
     state <- states$NAME[states$id == st]
     
+    st_id <- basename(st)
+    
     if(nrow(gages) > 0) {
       rmarkdown::render("R/index_template.Rmd", 
-                        output_file = file.path("../docs", paste0(st, ".html")), 
+                        output_file = file.path("../docs", paste0(st_id, ".html")), 
                         params = list(
                           name = state,
                           ref = gages
