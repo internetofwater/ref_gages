@@ -40,7 +40,7 @@ plan <- drake_plan(
   # This functions loads locally stored streamstats sites.
   streamstats_sites = get_streamstats_sites(),
   
-  # this function filters and renames NWIS Gage Locations
+  # this function filters and renames gage locations to a common table
   gage_locations = get_gage_locations(nwis_gage, streamstats_sites, cdec_gage),
   
   # This Gage layer from NHDPlusV2 is a basic starting point for
@@ -70,9 +70,11 @@ plan <- drake_plan(
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  providers = read_csv(drake::file_in("reg/providers.csv")),
+  providers = read_csv(file_in("reg/providers.csv")),
+  
+  
   registry = build_registry(gage_locations,
-                            registry = registry_file,
+                            registry = file_in(registry_file),
                             providers = providers),
   
   # Creates an output for USGS namespace reference locations
