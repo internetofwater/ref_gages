@@ -41,3 +41,9 @@ get_streamstats_sites <- function() {
   
   do.call(rbind, streamstats)
 }
+
+get_cdec_data <- function() {
+  url <- "https://sb19.linked-data.internetofwater.dev/collections/ca_gages/items?f=json&limit=10000"
+  
+  sf::read_sf(url)
+}

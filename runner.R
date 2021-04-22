@@ -34,12 +34,14 @@ plan <- drake_plan(
   # This function downloads all NWIS sites from the site file
   nwis_gage = get_nwis_sites(),
   
+  # This function downloads all cdec sites
+  cdec_gage = get_cdec_data(),
   
   # This functions loads locally stored streamstats sites.
   streamstats_sites = get_streamstats_sites(),
   
   # this function filters and renames NWIS Gage Locations
-  gage_locations = get_nwis_gage_locations(nwis_gage, streamstats_sites),
+  gage_locations = get_gage_locations(nwis_gage, streamstats_sites, cdec_gage),
   
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
@@ -48,6 +50,8 @@ plan <- drake_plan(
                        nhdpv2_REACH_measure = Measure,
                        nhdpv2_COMID = FLComID,
                        provider_id = SOURCE_FEA),
+  
+  cdec_gage_address = get_cdec_gage_locations(cdec_gage),
   
   # This function takes a table of all NWIS and more in the future gage
   # locations and a list of provided hydrologic locations. The provider
@@ -58,13 +62,15 @@ plan <- drake_plan(
     all_gages = gage_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
-           locations = nhdpv2_gage)),
+           locations = nhdpv2_gage),
+      list(provider = "https://cdec.water.ca.gov",
+           locations = cdec_gage_address)),
     nhdpv2_fline = nhdpv2_fline_proc),
   
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  providers = read_csv("reg/providers.csv"),
+  providers = read_csv(drake::file_in("reg/providers.csv")),
   registry = build_registry(gage_locations,
                             registry = registry_file,
                             providers = providers),

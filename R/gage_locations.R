@@ -1,4 +1,4 @@
-get_nwis_gage_locations <- function(nwis_gage, streamstats_sites) {
+get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage) {
   
   sqmi_to_sqkm <- 2.58999
   
@@ -26,6 +26,28 @@ get_nwis_gage_locations <- function(nwis_gage, streamstats_sites) {
            provider,
            provider_id,
            drainage_area_sqkm)
+  
+  c_gage <- cdec_gage %>%
+    mutate(description = paste("Stream Type:", ucdstrmclass, "Status:", sitestatus)) %>%
+    filter(provider == "https://cdec.water.ca.gov") %>%
+    select(name = sitename, 
+           description = description,
+           subjectOf = weblink,
+           provider = provider,
+           provider_id = id, 
+           drainage_area_sqkm = totdasqkm)
+  
+  bind_rows(c_gage, gages)
+}
+
+get_cdec_gage_locations <- function(gages) {
+  gages %>%
+    filter(provider == "https://cdec.water.ca.gov") %>%
+    select(nhdpv2_REACHCODE = rchcd_medres,
+           nhdpv2_COMID = comid_medres,
+           provider_id = id) %>%
+    mutate(nhdpv2_REACH_measure = rep(NA_real_, nrow(.)),
+           nhdpv2_COMID = as.numeric(nhdpv2_COMID)) ->t
 }
 
 get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline,
@@ -56,6 +78,18 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
       hl$locations$nhdpv2_REACH_measure
     all_gages$nhdpv2_COMID[provider_selector][matcher] <- 
       hl$locations$nhdpv2_COMID
+    
+    # Some gages missing reachcode/measure but have COMID
+    update_index <- is.na(all_gages$nhdpv2_REACH_measure & !is.na(all_gages$nhdpv2_COMID))
+    
+    if(any(update_index)) {
+      linked_gages <- select(all_gages[update_index, ], provider_id, nhdpv2_COMID) %>%
+        left_join(select(sf::st_drop_geometry(nhdpv2_fline), COMID, FromMeas), 
+                  by = c("nhdpv2_COMID" = "COMID"))
+      
+      all_gages$nhdpv2_REACH_measure[update_index] <- 
+        linked_gages$FromMeas
+    }
   }
   
   all_gages <- left_join(all_gages, v2_area, by = "nhdpv2_COMID")
