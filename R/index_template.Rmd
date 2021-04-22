@@ -8,6 +8,8 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(mapview)
+mapviewOptions(fgb = FALSE)
 ```
 
 This index provides access to all reference gage locations in `r params$name`
