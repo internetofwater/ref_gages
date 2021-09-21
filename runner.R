@@ -11,6 +11,9 @@ library(mapview)
 registry_file <- "reg/ref_gages.csv"
 reference_file <- "out/ref_gages.gpkg"
 
+# this is a set of location overrides
+nwis_hydrolocation <- "data/nwis_hydrolocations.csv"
+
 # These are generated for a USGS namespace in geoconnex.
 usgs_reference_file <- "out/usgs_gages.gpkg"
 usgs_nldi_file <- "out/usgs_nldi_gages.geojson"
@@ -41,7 +44,9 @@ plan <- drake_plan(
   streamstats_sites = get_streamstats_sites(),
   
   # this function filters and renames gage locations to a common table
-  gage_locations = get_gage_locations(nwis_gage, streamstats_sites, cdec_gage),
+  gage_locations = get_gage_locations(nwis_gage,
+                                      streamstats_sites, 
+                                      cdec_gage),
   
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
@@ -50,6 +55,9 @@ plan <- drake_plan(
                        nhdpv2_REACH_measure = Measure,
                        nhdpv2_COMID = FLComID,
                        provider_id = SOURCE_FEA),
+  
+  nwis_gage_hydro_locatons = get_nwis_hydrologications(nhdpv2_gage,
+                                                       nwis_hydrolocation),
   
   cdec_gage_address = get_cdec_gage_locations(cdec_gage),
   
@@ -62,7 +70,7 @@ plan <- drake_plan(
     all_gages = gage_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
-           locations = nhdpv2_gage),
+           locations = nwis_gage_hydro_locatons),
       list(provider = "https://cdec.water.ca.gov",
            locations = cdec_gage_address)),
     nhdpv2_fline = nhdpv2_fline_proc),

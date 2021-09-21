@@ -50,6 +50,27 @@ get_cdec_gage_locations <- function(gages) {
            nhdpv2_COMID = as.numeric(nhdpv2_COMID)) ->t
 }
 
+get_nwis_hydrolocations <- function(nhdpv2_gage, 
+                                    nwis_hydrolocation) {
+  nh <- read.csv(nwis_hydrolocation, colClasses = c("character", 
+                                                    "integer", 
+                                                    "character", 
+                                                    "numeric"))
+  
+  m <- match(nh$provider_id, nhdpv2_gage$provider_id)
+  
+  if(!is.na(m)) {
+    nhdpv2_gage[m, names(nh), drop = TRUE] <- nh
+  }
+  
+  nh_missing <- nh[!nh$provider_id %in% nhdpv2_gage$provider_id, ]
+  
+  if(nrow(nh_missing) > 0) {
+    nhdpv2_gage <- bind_rows(nhdpv2_gage, nh_missing)
+  }
+  
+}
+
 get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline,
                                      da_diff_thresh = 0.5, search_radius_m = 500,
                                      max_matches_in_radius = 5) {
