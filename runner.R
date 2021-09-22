@@ -56,8 +56,8 @@ plan <- drake_plan(
                        nhdpv2_COMID = FLComID,
                        provider_id = SOURCE_FEA),
   
-  nwis_gage_hydro_locatons = get_nwis_hydrologications(nhdpv2_gage,
-                                                       nwis_hydrolocation),
+  nwis_gage_hydro_locatons = get_nwis_hydrolocations(nhdpv2_gage,
+                                                     nwis_hydrolocation),
   
   cdec_gage_address = get_cdec_gage_locations(cdec_gage),
   
