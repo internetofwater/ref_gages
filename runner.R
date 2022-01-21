@@ -7,6 +7,7 @@ library(sbtools)
 library(readr)
 library(knitr)
 library(mapview)
+library(sbtools)
 
 registry_file <- "reg/ref_gages.csv"
 reference_file <- "out/ref_gages.gpkg"
@@ -43,6 +44,9 @@ plan <- drake_plan(
   # This functions loads locally stored streamstats sites.
   streamstats_sites = get_streamstats_sites(),
   
+  # This function loads the SWIMS gage locations.
+  swims_gage = get_swim_data(),
+  
   # this function filters and renames gage locations to a common table
   gage_locations = get_gage_locations(nwis_gage,
                                       streamstats_sites, 
@@ -57,6 +61,7 @@ plan <- drake_plan(
                        provider_id = SOURCE_FEA),
   
   nwis_gage_hydro_locatons = get_nwis_hydrolocations(nhdpv2_gage,
+                                                     swims_gage,
                                                      nwis_hydrolocation),
   
   cdec_gage_address = get_cdec_gage_locations(cdec_gage),

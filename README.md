@@ -16,7 +16,7 @@ In practice, these urls will look like:
 1. `https://info.geoconnex.us/collections/gages/1071321` (which will provide information about the reference location, including a link to 3)
 1. `https://waterdata.usgs.gov/monitoring-location/05430175/` (which is the USGS's site information for this particular reference location.)
 
-It is important to maintain this seperation because no one organization, other than a community organization set up to fulfill this role, can be expected to be both the community reference catalog and a provider of their own information.  
+It is important to maintain this separation because no one organization, other than a community organization set up to fulfill this role, can be expected to be both the community reference catalog and a provider of their own information.  
 
 # Project structure
 

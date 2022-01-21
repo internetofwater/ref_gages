@@ -47,3 +47,37 @@ get_cdec_data <- function() {
   
   sf::read_sf(url)
 }
+
+get_swim_data <- function() {
+  sb <- "5ebe92af82ce476925e44b8f"
+  
+  out_dir <- tempdir(check = TRUE)
+  
+  item <- item_get(sb)
+  
+  facet_files <- 
+    lapply(item$facets, function(x) 
+    {
+      list(name = x$name, 
+           files = lapply(x$files, function(y, out_path)
+           {
+             
+             out_file <- file.path(out_path, y$name)
+             dir.create(out_path, showWarnings = FALSE, recursive = TRUE)
+             download.file(y$downloadUri, out_file, mode = "wb")
+             
+             list(fname = y$name,
+                  url = y$downloadUri,
+                  path = out_file)
+             
+           }, 
+           out_path = file.path(out_dir, x$name)))
+    })
+  
+  shp <- sapply(facet_files[[1]]$files, function(x) x$path)
+  
+  shp <- shp[grepl("shp$", shp)]
+  
+  sf::read_sf(shp)
+  
+}

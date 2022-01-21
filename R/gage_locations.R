@@ -51,23 +51,27 @@ get_cdec_gage_locations <- function(gages) {
 }
 
 get_nwis_hydrolocations <- function(nhdpv2_gage, 
+                                    swim_gage,
                                     nwis_hydrolocation) {
   nh <- read.csv(nwis_hydrolocation, colClasses = c("character", 
                                                     "integer", 
                                                     "character", 
                                                     "numeric"))
   
-  m <- match(nh$provider_id, nhdpv2_gage$provider_id)
+  if(any(swim_gage$Gage_no %in% nh$provider_id)) stop("duplicates in override registry")
   
-  if(!is.na(m)) {
-    nhdpv2_gage[m, names(nh), drop = TRUE] <- nh
-  }
+  swim_gage <- sf::st_drop_geometry(swim_gage) %>%
+    select(provider_id = Gage_no, 
+           nhdpv2_COMID = COMID,
+           nhdpv2_REACHCODE = REACHCODE,
+           nhdpv2_REACH_measure = REACH_meas)
   
-  nh_missing <- nh[!nh$provider_id %in% nhdpv2_gage$provider_id, ]
+  nh <- bind_rows(nh, swim_gage)
   
-  if(nrow(nh_missing) > 0) {
-    nhdpv2_gage <- bind_rows(nhdpv2_gage, nh_missing)
-  }
+  nhdpv2_gage <- filter(st_drop_geometry(nhdpv2_gage), 
+                        !provider_id %in% nh$provider_id)
+  
+  bind_rows(nhdpv2_gage, nh)
   
 }
 

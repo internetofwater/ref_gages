@@ -53,7 +53,7 @@ convert_provider_id <- function(registry, providers) {
 }
 
 build_index <- function(reference, index_dir) {
-  states <- read_sf("https://info.geoconnex.us/collections/states/items?f=json&limit=100")
+  states <- read_sf("https://reference.geoconnex.us/collections/states/items?f=json&limit=100")
   
   reference <- st_join(reference, select(states, state = id))
   
