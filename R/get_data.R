@@ -81,3 +81,17 @@ get_swim_data <- function() {
   sf::read_sf(shp)
   
 }
+
+get_all_mainstems <- function(outdir) {
+  url <- "https://www.hydroshare.org/resource/4a22e88e689949afa1cf71ae009eaf1b/data/contents/mainstems.gpkg"
+  
+  dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+  
+  f <- file.path(outdir, basename(url))
+  
+  if(!file.exists(f)) {
+    download.file(url, destfile = f, mode = "wb")
+  }
+  
+  sf::read_sf(f)
+}

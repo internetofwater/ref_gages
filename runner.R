@@ -9,7 +9,6 @@ library(knitr)
 library(mapview)
 library(sbtools)
 
-registry_file <- "reg/ref_gages.csv"
 reference_file <- "out/ref_gages.gpkg"
 
 # this is a set of location overrides
@@ -34,7 +33,9 @@ plan <- drake_plan(
   nhdpv2_fline = read_sf(nat_db, "NHDFlowline_Network"),
   nhdpv2_fline_proc = select(st_transform(nhdpv2_fline, 5070),
                              COMID, REACHCODE, ToMeas, FromMeas),
-  
+  mainstems = get_all_mainstems("data/mainstems/"),
+  vaa = get_vaa(atts = c("comid", "levelpathi"),
+                updated_network = TRUE),
   # This function downloads all NWIS sites from the site file
   nwis_gage = get_nwis_sites(),
   
@@ -80,6 +81,9 @@ plan <- drake_plan(
            locations = cdec_gage_address)),
     nhdpv2_fline = nhdpv2_fline_proc),
   
+  gage_hydrologic_locations_with_mainstems = add_mainstems(gage_hydrologic_locations,
+                                                           mainstems, vaa),
+  
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
@@ -87,14 +91,18 @@ plan <- drake_plan(
   
   
   registry = build_registry(gage_locations,
-                            registry = file_in(registry_file),
+                            registry = file_in("reg/ref_gages.csv"),
                             providers = providers),
   
   # Creates an output for USGS namespace reference locations
-  usgs_reference_out = write_usgs_reference(gage_hydrologic_locations, registry, providers, usgs_reference_file, usgs_nldi_file),
+  usgs_reference_out = write_usgs_reference(gage_hydrologic_locations_with_mainstems, 
+                                            registry, providers, usgs_reference_file, 
+                                            usgs_nldi_file),
   
-  reference_out = write_reference(gage_hydrologic_locations, registry, providers, reference_file, nldi_file),
-  registry_out = write_registry(registry, registry_file),
+  reference_out = write_reference(gage_hydrologic_locations_with_mainstems, 
+                                  registry, providers, reference_file, 
+                                  nldi_file),
+  registry_out = write_registry(registry, "reg/ref_gages.csv"),
   index = build_index(reference_out, index_dir))
 
 make(plan, memory_strategy = "autoclean", garbage_collection = TRUE, lock_envir = FALSE)

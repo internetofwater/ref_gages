@@ -33,7 +33,12 @@ build_registry <- function(gage_list, registry, providers) {
     } else if(nrow(reg) == nrow(gl)) {
       return(reg)
     } else {
-      stop("gl should not be shorter than reg.")
+      if(all(paste0(gl$provider, gl$provider_id) %in% 
+             paste0(reg$provider, reg$provider_id))) {
+        return(reg)
+      } else {
+        stop("gl should not be shorter than reg.")
+      }
     }
     
     reg <- bind_rows(reg, gl)

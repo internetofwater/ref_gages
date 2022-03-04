@@ -4,7 +4,9 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
     mutate(identifier = paste0(provider, provider_id)) %>%
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
-    select(id, uri, name, description, subjectOf, provider, provider_id, nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID) %>%
+    select(id, uri, name, description, subjectOf, 
+           provider, provider_id, nhdpv2_REACHCODE, 
+           nhdpv2_REACH_measure, nhdpv2_COMID, mainstem_uri) %>%
     mutate(id = as.integer(id))
   
   write_sf(out, reference_file)
