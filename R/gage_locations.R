@@ -64,8 +64,9 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
     select(provider_id = Gage_no, 
            nhdpv2_COMID = COMID,
            nhdpv2_REACHCODE = REACHCODE,
-           nhdpv2_REACH_measure = REACH_meas)
-  
+           nhdpv2_REACH_measure = REACH_meas) %>%
+    filter(nhdpv2_COMID != -9999)
+
   nh <- bind_rows(nh, swim_gage)
   
   nhdpv2_gage <- filter(st_drop_geometry(nhdpv2_gage), 
@@ -130,10 +131,12 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
   
   no_location <- all_gages[update_index, ]
   
+  no_location <- st_transform(no_location, 5070)
   
   new_hl <- nhdplusTools::get_flowline_index(nhdpv2_fline, 
                                              no_location, 
-                                             search_radius = search_radius_m, 
+                                             search_radius = units::set_units(
+                                               search_radius_m, "m"),
                                              max_matches = max_matches_in_radius)
   
   
@@ -172,4 +175,17 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
   all_gages$nhdpv2_COMID[update_index] <- linked_gages$COMID
   
   all_gages
+}
+
+add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
+  mainstems <- mainstems[,c("id", "uri"), drop = TRUE]
+  mainstems$id <- as.integer(mainstems$id)
+  vaa <- right_join(vaa, mainstems, by = c("levelpathi" = "id"))
+  
+  vaa <- vaa[,c("comid", "uri")]
+  
+  names(vaa) <- c("comid", "mainstem_uri")
+  
+  left_join(gage_hydrologic_locations, vaa, 
+            by = c("nhdpv2_COMID" = "comid"))
 }
