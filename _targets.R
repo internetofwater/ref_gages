@@ -82,11 +82,11 @@ list(
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  tar_target("providers", read_csv(file_in("reg/providers.csv"))),
+  tar_target("providers", read_csv("reg/providers.csv")),
   
   
   tar_target("registry", build_registry(gage_locations,
-                                        registry = file_in("reg/ref_gages.csv"),
+                                        registry = "reg/ref_gages.csv",
                                         providers = providers)),
   
   # Creates an output for USGS namespace reference locations
