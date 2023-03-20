@@ -14,7 +14,7 @@ get_nwis_sites <- function() {
 }
 
 get_streamstats_sites <- function() {
-  base_url <- "https://test.streamstats.usgs.gov/gagestatsservices/stations?pageCount=1000&page="
+  base_url <- "https://streamstats.usgs.gov/gagestatsservices/stations?pageCount=1000&page="
   
   check <- TRUE
   page <- 1
@@ -39,7 +39,7 @@ get_streamstats_sites <- function() {
     sf::st_sf(x, crs = sf::st_crs(4326))
   })
   
-  do.call(rbind, streamstats)
+  dplyr::bind_rows(streamstats)
 }
 
 get_cdec_data <- function() {
