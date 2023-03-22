@@ -48,6 +48,44 @@ get_cdec_data <- function() {
   sf::read_sf(url)
 }
 
+get_co_data <- function() {
+  # https://data.colorado.gov/Water/Current-Surface-Water-Conditions-in-Colorado/4yw9-a5y6/data
+  
+ url <- "https://data.colorado.gov/api/views/4yw9-a5y6/rows.csv?accessType=DOWNLOAD"
+ 
+ d <- readr::read_csv(url) 
+ 
+ d$x <- sapply(strsplit(d$Location, split = ", "), 
+               function(x) as.numeric(gsub("\\(", "", x[1])), USE.NAMES = FALSE)
+ d$y <- sapply(strsplit(d$Location, split = ", "), 
+               function(x) as.numeric(gsub("\\)", "", x[2])), USE.NAMES = FALSE)
+ 
+ d <- d[!is.na(d$Location), ]
+ 
+ sf::st_as_sf(d, coords = c("x", "y"), crs = 4326)
+}
+
+get_pnw_data <- function() {
+  # "https://doi.org/10.18122/redi_data.2.boisestate"
+  
+  zip <- "https://scholarworks.boisestate.edu/context/redi_data/article/1001/type/native/viewcontent"
+  
+  f <- tempfile(fileext = ".zip")
+  
+  download.file(zip, f, mode = "wb")
+  
+  contents <- zip::unzip(f, exdir = dirname(f))
+  
+  f <- list.files(dirname(f), pattern = "Streamflow_Catalog_2023-02-06.xlsx", full.names = TRUE)
+  
+  d <- readxl::read_xlsx(f, 1)
+  p <- readxl::read_xlsx(f, 2)
+  
+  d <- sf::st_as_sf(d, coords = c("long", "lat"), crs = 4326)
+  
+  list(data = d, providers = p)
+}
+
 get_swim_data <- function() {
   sb <- "5ebe92af82ce476925e44b8f"
   

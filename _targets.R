@@ -37,6 +37,12 @@ list(
   # This function downloads all cdec sites
   tar_target("cdec_gage", get_cdec_data()),
   
+  # This function downloads all CO gage data
+  tar_target("co_gage", get_co_data()),
+  
+  # This function downloads all gages from the PNW catalog
+  tar_target("pnw_gage", get_pnw_data()),
+  
   # This functions loads locally stored streamstats sites.
   tar_target("streamstats_sites", get_streamstats_sites()),
   
@@ -98,4 +104,3 @@ list(
                                               registry, providers, reference_file, 
                                               nldi_file)),
   tar_target("registry_out", write_registry(registry, "reg/ref_gages.csv")))
-# index" build_index(reference_out, index_dir))
