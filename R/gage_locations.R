@@ -9,7 +9,12 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage,
                                        site_tp_cd == "ST-DCH" |
                                        site_tp_cd == "ST-TS" |
                                        site_tp_cd == "ES" |
-                                       site_tp_cd == "LK") & 
+                                       site_tp_cd == "LK" | 
+                                       site_tp_cd == "FA-OF" | # outfalls
+                                       site_tp_cd == "FA-HP" | # hydropower
+                                       site_tp_cd == "FA-STS" | # storm sewer
+                                       site_tp_cd == "FA-DV" | # diversion
+                                       site_tp_cd == "FA-CS") & # combined sewer
                            !is.na(dec_long_va) & 
                            !is.na(dec_lat_va)) |>
     select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) |>
