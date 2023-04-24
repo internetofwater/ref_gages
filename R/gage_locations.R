@@ -1,4 +1,6 @@
-get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage) {
+# tar_load(c("nwis_gage", "streamstates_sites", "cdec_gage", "co_gage", "pnw_gage"))
+
+get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage, pnw_gage) {
   
   sqmi_to_sqkm <- 2.58999
   
@@ -9,17 +11,16 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage) {
                                        site_tp_cd == "ES" |
                                        site_tp_cd == "LK") & 
                            !is.na(dec_long_va) & 
-                           !is.na(dec_lat_va)) %>%
-    select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) %>%
-    group_by(site_no) %>% arrange(drain_area_va) %>%
-    filter(n() == 1) %>% ungroup() %>%
-    st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = 4326) %>%
+                           !is.na(dec_lat_va)) |>
+    select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) |>
+    group_by(site_no) |> arrange(drain_area_va) |>
+    filter(n() == 1) |> ungroup() |>
+    st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = 4326) |>
     mutate(description = paste0("USGS NWIS Stream/River/Lake Site ", site_no, ": ", station_nm),
            subjectOf = paste0("https://waterdata.usgs.gov/monitoring-location/", site_no),
-           uri = paste0("https://geoconnex.us/ref/gages/", n()),
            provider = "https://waterdata.usgs.gov",
            provider_id = site_no,
-           drainage_area_sqkm = (as.numeric(drain_area_va) * sqmi_to_sqkm)) %>%
+           drainage_area_sqkm = (as.numeric(drain_area_va) * sqmi_to_sqkm)) |>
     select(name = station_nm, 
            description,
            subjectOf,
@@ -27,9 +28,9 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage) {
            provider_id,
            drainage_area_sqkm)
   
-  c_gage <- cdec_gage %>%
-    mutate(description = paste("Stream Type:", ucdstrmclass, "Status:", sitestatus)) %>%
-    filter(provider == "https://cdec.water.ca.gov") %>%
+  c_gage <- cdec_gage |>
+    mutate(description = paste("Stream Type:", ucdstrmclass, "Status:", sitestatus)) |>
+    filter(provider == "https://cdec.water.ca.gov") |>
     select(name = sitename, 
            description = description,
            subjectOf = weblink,
@@ -37,17 +38,56 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage) {
            provider_id = id, 
            drainage_area_sqkm = totdasqkm)
   
-  bind_rows(c_gage, gages)
+  co_gage_out <- co_gage |>
+    mutate(description = paste("CO DWR Station Type:", `Station Type`, "from data source:", `Data Source`),
+           provider = "https://dwr.state.co.us") |>
+    select(name = `Station Name`,
+           description = description,
+           subjectOf = `More Information`,
+           provider = provider,
+           provider_id = `DWR Abbrev`)
+  
+  p_gage_provider <- pnw_gage$providers |>
+    mutate(url = ifelse(is.na(`Organization Website`), 
+                              `Program Website`,
+                              `Organization Website`))
+  
+  p_gage_out <- pnw_gage$data |>
+    left_join(select(p_gage_provider, Organization, provider_url = url), 
+              by = c("organization" = "Organization")) |>
+    mutate(description = paste0(organization, " Streamflow Site")) |>
+    mutate(description = ifelse(!`stream type` %in% c("unknown", "NA"),
+                                paste0(description, " Type: ", `stream type`),
+                                description)) |>
+    select(name = Site_Name,
+           description, 
+           subjectOf = url,
+           provider = provider_url,
+           provider_id = org_SiteNo)
+    
+  
+  bind_rows(co_gage_out, c_gage, gages)
 }
 
 get_cdec_gage_locations <- function(gages) {
-  gages %>%
-    filter(provider == "https://cdec.water.ca.gov") %>%
+  gages |>
+    filter(provider == "https://cdec.water.ca.gov") |>
     select(nhdpv2_REACHCODE = rchcd_medres,
            nhdpv2_COMID = comid_medres,
-           provider_id = id) %>%
-    mutate(nhdpv2_REACH_measure = rep(NA_real_, nrow(.)),
-           nhdpv2_COMID = as.numeric(nhdpv2_COMID)) ->t
+           provider_id = id) |>
+    mutate(nhdpv2_REACH_measure = rep(NA_real_, n()),
+           nhdpv2_COMID = as.numeric(nhdpv2_COMID))
+}
+
+# gages <- targets::tar_read("co_gage")
+get_co_gage_locations <- function(gages) {
+  
+  gages |>
+    select(provider_id = `DWR Abbrev`) |>
+    mutate(nhdpv2_REACHCODE = rep(NA_character_, n()),
+           nhdpv2_COMID = rep(NA_integer_, n()),
+           nhdpv2_REACH_measure = rep(NA_real_, n()))
+  
 }
 
 get_nwis_hydrolocations <- function(nhdpv2_gage, 
@@ -60,11 +100,11 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
   
   if(any(swim_gage$Gage_no %in% nh$provider_id)) stop("duplicates in override registry")
   
-  swim_gage <- sf::st_drop_geometry(swim_gage) %>%
+  swim_gage <- sf::st_drop_geometry(swim_gage) |>
     select(provider_id = Gage_no, 
            nhdpv2_COMID = COMID,
            nhdpv2_REACHCODE = REACHCODE,
-           nhdpv2_REACH_measure = REACH_meas) %>%
+           nhdpv2_REACH_measure = REACH_meas) |>
     filter(nhdpv2_COMID != -9999)
 
   nh <- bind_rows(nh, swim_gage)
@@ -109,7 +149,7 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
     update_index <- is.na(all_gages$nhdpv2_REACH_measure & !is.na(all_gages$nhdpv2_COMID))
     
     if(any(update_index)) {
-      linked_gages <- select(all_gages[update_index, ], provider_id, nhdpv2_COMID) %>%
+      linked_gages <- select(all_gages[update_index, ], provider_id, nhdpv2_COMID) |>
         left_join(select(sf::st_drop_geometry(nhdpv2_fline), COMID, FromMeas), 
                   by = c("nhdpv2_COMID" = "COMID"))
       
@@ -140,32 +180,32 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
                                              max_matches = max_matches_in_radius)
   
   
-  linked_gages <- st_drop_geometry(select(no_location, provider_id)) %>%
-    mutate(id = seq_len(nrow(.))) %>%
-    left_join(new_hl, by = "id") %>%
+  linked_gages <- st_drop_geometry(select(no_location, provider_id)) |>
+    mutate(id = seq_len(nrow(.))) |>
+    left_join(new_hl, by = "id") |>
     left_join(select(st_drop_geometry(all_gages), 
                      provider_id, drainage_area_sqkm), 
-              by = "provider_id") %>%
-    left_join(v2_area, by = c("COMID" = "nhdpv2_COMID")) %>%
+              by = "provider_id") |>
+    left_join(v2_area, by = c("COMID" = "nhdpv2_COMID")) |>
     mutate(da_diff = abs(drainage_area_sqkm - nhdpv2_totdasqkm))
   
   linked_gages_dedup <- bind_rows(
-    linked_gages %>%
-      group_by(provider_id) %>%
-      filter(is.na(da_diff)) %>%
-      filter(offset == min(offset)) %>%
+    linked_gages |>
+      group_by(provider_id) |>
+      filter(is.na(da_diff)) |>
+      filter(offset == min(offset)) |>
       ungroup(), 
-    linked_gages %>%
-      group_by(provider_id) %>%
-      filter(!is.na(da_diff)) %>%
-      filter(da_diff == min(da_diff)) %>%
-      ungroup()) %>%
-    group_by(provider_id) %>%
-    filter(n() == 1) %>%
+    linked_gages |>
+      group_by(provider_id) |>
+      filter(!is.na(da_diff)) |>
+      filter(da_diff == min(da_diff)) |>
+      ungroup()) |>
+    group_by(provider_id) |>
+    filter(n() == 1) |>
     ungroup()
   
-  linked_gages <- select(no_location, provider_id) %>%
-    mutate(id = seq_len(nrow(.))) %>%
+  linked_gages <- select(no_location, provider_id) |>
+    mutate(id = seq_len(nrow(.))) |>
     left_join(select(linked_gages_dedup, 
                      id, COMID, REACHCODE, REACH_meas), 
               by = "id")

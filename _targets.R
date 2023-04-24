@@ -2,7 +2,7 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview"),
-               memory = "transient", garbage_collection = TRUE)
+               memory = "transient", garbage_collection = TRUE, debug = "registry")
 
 reference_file <- "out/ref_gages.gpkg"
 
@@ -31,6 +31,8 @@ list(
   tar_target("mainstems", get_all_mainstems("data/mainstems/")),
   tar_target("vaa", get_vaa(atts = c("comid", "levelpathi"),
                            updated_network = TRUE)),
+  
+  ### Downloaders ###
   # This function downloads all NWIS sites from the site file
   tar_target("nwis_gage", get_nwis_sites()),
   
@@ -49,11 +51,16 @@ list(
   # This function loads the SWIMS gage locations.
   tar_target("swims_gage", get_swim_data()),
   
+  ### metadata integration ###
   # this function filters and renames gage locations to a common table
+  # It does not handle location information and duplicates are fine at this stage.
   tar_target("gage_locations", get_gage_locations(nwis_gage,
                                                   streamstats_sites, 
-                                                  cdec_gage)),
+                                                  cdec_gage,
+                                                  co_gage,
+                                                  pnw_gage)),
   
+  ### location normalization ###
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
   tar_target("nhdpv2_gage", select(read_sf(nat_db, "Gage"), 
@@ -68,6 +75,9 @@ list(
   
   tar_target("cdec_gage_address", get_cdec_gage_locations(cdec_gage)),
   
+  tar_target("co_gage_address", get_co_gage_locations(co_gage)),
+  
+  ### spatial integration ###
   # This function takes a table of all NWIS and more in the future gage
   # locations and a list of provided hydrologic locations. The provider
   # is a way to join on provider and provider_id in the all_gages input.
@@ -79,22 +89,27 @@ list(
       list(provider = "https://waterdata.usgs.gov",
            locations = nwis_gage_hydro_locatons),
       list(provider = "https://cdec.water.ca.gov",
-           locations = cdec_gage_address)),
+           locations = cdec_gage_address),
+      list(provider = "https://dwr.state.co.us",
+           locations = co_gage_address)),
     nhdpv2_fline = nhdpv2_fline_proc)),
   
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
                                                                        mainstems, vaa)),
   
+  ### Registry ###
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  tar_target("providers", read_csv("reg/providers.csv")),
+  tar_target("providers_csv", command = "reg/providers.csv", format = "file"),
+  tar_target("providers", read_csv(providers_csv)),
   
   
   tar_target("registry", build_registry(gage_locations,
                                         registry = "reg/ref_gages.csv",
                                         providers = providers)),
   
+  ### output ###
   # Creates an output for USGS namespace reference locations
   tar_target("usgs_reference_out", write_usgs_reference(gage_hydrologic_locations_with_mainstems, 
                                                         registry, providers, usgs_reference_file, 

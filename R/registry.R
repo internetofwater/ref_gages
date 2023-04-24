@@ -49,3 +49,26 @@ convert_coords <- function(gl) {
   
   st_drop_geometry(gl)
 }
+
+#' Get Formatted Registry
+#' @description
+#' Returns the complete current registry in expanded form including URI and 
+#' subjectOf URL from the provider.
+#' 
+get_registry <- function(registry = "reg/ref_gages.csv",
+                         providers = "reg/providers.csv") {
+  
+  reg <- read_csv(registry)
+  pro <- read_csv(providers)
+  
+  left_join(reg, select(pro, id, provider_url = provider), 
+                   by = c("provider" = "id")) |>
+    select(-provider) |>
+    mutate(uri = paste0("https://geoconnex.us/ref/gages/", id),
+           subjectOf = paste0(case_when(
+             provider_url == "https://waterdata.usgs.gov" ~ "https://waterdata.usgs.gov/monitoring-location/",
+             provider_url == "https://cdec.water.ca.gov" ~ "https://cdec.water.ca.gov/dynamicapp/staMeta?station_id=",
+             provider_url == "https://dwr.state.co.us" ~ "https://dwr.state.co.us/Tools/Stations/"
+           ), provider_id))
+  
+}
