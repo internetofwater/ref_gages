@@ -55,9 +55,9 @@ get_co_data <- function() {
  
  d <- readr::read_csv(url) 
  
- d$x <- sapply(strsplit(d$Location, split = ", "), 
-               function(x) as.numeric(gsub("\\(", "", x[1])), USE.NAMES = FALSE)
  d$y <- sapply(strsplit(d$Location, split = ", "), 
+               function(x) as.numeric(gsub("\\(", "", x[1])), USE.NAMES = FALSE)
+ d$x <- sapply(strsplit(d$Location, split = ", "), 
                function(x) as.numeric(gsub("\\)", "", x[2])), USE.NAMES = FALSE)
  
  d <- d[!is.na(d$Location), ]

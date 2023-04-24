@@ -9,12 +9,7 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage,
                                        site_tp_cd == "ST-DCH" |
                                        site_tp_cd == "ST-TS" |
                                        site_tp_cd == "ES" |
-                                       site_tp_cd == "LK" | 
-                                       site_tp_cd == "FA-OF" | # outfalls
-                                       site_tp_cd == "FA-HP" | # hydropower
-                                       site_tp_cd == "FA-STS" | # storm sewer
-                                       site_tp_cd == "FA-DV" | # diversion
-                                       site_tp_cd == "FA-CS") & # combined sewer
+                                       site_tp_cd == "LK") & 
                            !is.na(dec_long_va) & 
                            !is.na(dec_lat_va)) |>
     select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) |>
@@ -186,7 +181,7 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
   
   
   linked_gages <- st_drop_geometry(select(no_location, provider_id)) |>
-    mutate(id = seq_len(nrow(.))) |>
+    mutate(id = seq_len(n())) |>
     left_join(new_hl, by = "id") |>
     left_join(select(st_drop_geometry(all_gages), 
                      provider_id, drainage_area_sqkm), 
@@ -210,7 +205,7 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
     ungroup()
   
   linked_gages <- select(no_location, provider_id) |>
-    mutate(id = seq_len(nrow(.))) |>
+    mutate(id = seq_len(n())) |>
     left_join(select(linked_gages_dedup, 
                      id, COMID, REACHCODE, REACH_meas), 
               by = "id")
