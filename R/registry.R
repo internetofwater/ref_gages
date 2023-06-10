@@ -40,8 +40,8 @@ build_registry <- function(gl, registry, providers) {
 
 convert_coords <- function(gl) {
   coords <- st_coordinates(gl)
-  gl$lon <- coords[, 1]
-  gl$lat <- coords[, 2]
+  gl$lon <- as.numeric(coords[, 1])
+  gl$lat <- as.numeric(coords[, 2])
   
   st_drop_geometry(gl)
 }
@@ -68,3 +68,32 @@ get_registry <- function(registry = "reg/ref_gages.csv",
            ), provider_id))
   
 }
+
+#' @description builds a table of reference locations for gages in the registry
+build_reference_location <- function(gl, reference_locations, registry, providers) {
+ 
+  # all registry points from current run
+  reg <- read_csv(registry)
+
+  # get our current run gage locations into registry form
+  gl <- left_join(gl, select(providers, provider_int = id, provider), by = "provider")
+
+  # get locations into csv form
+  loc <- distinct(select(convert_coords(gl), provider = provider_int, 
+                         provider_id, lon = lon, lat = lat)) |>
+    left_join(reg, by = c("provider", "provider_id"))
+      
+  # all existing known locations from last run
+  existing_locations <- read_csv(reference_locations)
+  
+  # figure out which ones are new
+  loc <- loc[!loc$id %in% existing_locations$id,]  
+
+  # return if none
+  if(nrow(loc) == 0) return(existing_locations)
+  
+  # else return all the old plus some new
+  bind_rows(existing_locations, loc)
+  
+}
+  

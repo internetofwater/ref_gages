@@ -109,6 +109,13 @@ list(
                                         registry = "reg/ref_gages.csv",
                                         providers = providers)),
   
+  # Also create a table of reference locations for the registered gages.
+  # unlike the registry, this may update to have the "best" location of a gage. 
+  tar_target("ref_locations", build_reference_location(gage_locations, 
+                                                       reference_locations = "reg/ref_locations.csv", 
+                                                       registry = "reg/ref_gages.csv", 
+                                                       providers = providers)),
+  
   ### output ###
   # Creates an output for USGS namespace reference locations
   tar_target("usgs_reference_out", write_usgs_reference(gage_hydrologic_locations_with_mainstems, 
