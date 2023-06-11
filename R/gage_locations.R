@@ -116,6 +116,10 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
   
 }
 
+#' hydrologic locations
+#' @description takes all gages from this run and all pre-determined hydrologic locations
+#' determines the "best" hydrologic location for each gage and snaps to NHDPlusV2
+#' if no pre-determined location exists.
 get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline,
                                      da_diff_thresh = 0.5, search_radius_m = 500,
                                      max_matches_in_radius = 5) {
