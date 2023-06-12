@@ -62,6 +62,14 @@ get_co_data <- function() {
  
  d <- d[!is.na(d$Location), ]
  
+ d <- select(d, `Station Type`, `Data Source`, `Station Name`, `More Information`, `DWR Abbrev`, x, y) |>
+   group_by(`DWR Abbrev`) |>
+   summarise(`Station Type` = paste(`Station Type`, collapse = " - "), 
+             `Data Source` = `Data Source`[1], 
+             `Station Name` = `Station Name`[1], 
+             `More Information` = `More Information`[1], 
+             x = x[1], y = y[1])
+ 
  sf::st_as_sf(d, coords = c("x", "y"), crs = 4326)
 }
 
