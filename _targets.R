@@ -2,7 +2,7 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview"),
-               memory = "transient", garbage_collection = TRUE, debug = "registry")
+               memory = "transient", garbage_collection = TRUE)
 
 reference_file <- "out/ref_gages.gpkg"
 
@@ -77,26 +77,6 @@ list(
   
   tar_target("co_gage_address", get_co_gage_locations(co_gage)),
   
-  ### spatial integration ###
-  # This function takes a table of all NWIS and more in the future gage
-  # locations and a list of provided hydrologic locations. The provider
-  # is a way to join on provider and provider_id in the all_gages input.
-  # The order that hydrologic locations sources are provided will determine
-  # precidence -- last defined wins.
-  tar_target("gage_hydrologic_locations", get_hydrologic_locations(
-    all_gages = gage_locations,
-    hydrologic_locations = list(
-      list(provider = "https://waterdata.usgs.gov",
-           locations = nwis_gage_hydro_locatons),
-      list(provider = "https://cdec.water.ca.gov",
-           locations = cdec_gage_address),
-      list(provider = "https://dwr.state.co.us",
-           locations = co_gage_address)),
-    nhdpv2_fline = nhdpv2_fline_proc)),
-  
-  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
-                                                                       mainstems, vaa)),
-  
   ### Registry ###
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
@@ -116,13 +96,39 @@ list(
                                                        registry = "reg/ref_gages.csv", 
                                                        providers = providers)),
   
+  ### spatial integration ###
+  # This function takes a table of all ref_locations, latest all_gages
+  # locations and a list of provided hydrologic locations. The provider
+  # is a way to join on provider and provider_id in the all_gages input.
+  # The order that hydrologic locations sources are provided will determine
+  # precidence -- last defined wins.
+  tar_target("gage_hydrologic_locations", get_hydrologic_locations(
+    all_gages = gage_locations,
+    ref_locations = ref_locations,
+    hydrologic_locations = list(
+      list(provider = "https://waterdata.usgs.gov",
+           locations = nwis_gage_hydro_locatons),
+      list(provider = "https://cdec.water.ca.gov",
+           locations = cdec_gage_address),
+      list(provider = "https://dwr.state.co.us",
+           locations = co_gage_address)),
+    nhdpv2_fline = nhdpv2_fline_proc)),
+  
+  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
+                                                                       mainstems, vaa)),
+  
+  # based on all known gages from all providers, find potential duplicates.
+  # starts by finding gages within 100m of eachother then checks if they are on different flowlines.
+  tar_target("duplicate_locations", find_duplicate_locations(gage_hydrologic_locations_with_mainstems)),
+  
   ### output ###
   # Creates an output for USGS namespace reference locations
-  tar_target("usgs_reference_out", write_usgs_reference(gage_hydrologic_locations_with_mainstems, 
-                                                        registry, providers, usgs_reference_file, 
+  tar_target("usgs_reference_out", write_usgs_reference(gage_hydrologic_locations_with_mainstems,
+                                                        registry, providers, usgs_reference_file,
                                                         usgs_nldi_file)),
   
   tar_target("reference_out", write_reference(gage_hydrologic_locations_with_mainstems, 
                                               registry, providers, reference_file, 
-                                              nldi_file)),
+                                              nldi_file,
+                                              duplicate_locations = duplicate_locations)),
   tar_target("registry_out", write_registry(registry, "reg/ref_gages.csv")))

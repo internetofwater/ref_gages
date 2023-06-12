@@ -120,13 +120,22 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
 #' @description takes all gages from this run and all pre-determined hydrologic locations
 #' determines the "best" hydrologic location for each gage and snaps to NHDPlusV2
 #' if no pre-determined location exists.
-get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fline,
+get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locations, nhdpv2_fline,
                                      da_diff_thresh = 0.5, search_radius_m = 500,
                                      max_matches_in_radius = 5) {
   
   v2_area <- select(nhdplusTools::get_vaa(), 
                     nhdpv2_COMID = comid, 
                     nhdpv2_totdasqkm = totdasqkm)
+  
+  providers <- readr::read_csv("reg/providers.csv")
+  ref_locations$provider <- providers$provider[ref_locations$provider]
+  
+  all_gages <- ref_locations |>
+    sf::st_as_sf(coords = c("lon", "lat"), crs = 4269) |>
+    left_join(select(sf::st_drop_geometry(all_gages), name, description, subjectOf, 
+                     provider, provider_id, drainage_area_sqkm),
+              by = c("provider", "provider_id"))
   
   all_gages$nhdpv2_REACHCODE <- NA
   all_gages$nhdpv2_REACH_measure <- NA
@@ -232,4 +241,57 @@ add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
   
   left_join(gage_hydrologic_locations, vaa, 
             by = c("nhdpv2_COMID" = "comid"))
+}
+
+#' find duplicate locations
+#' @description finds gages within 100m of eachother then checks if they are 
+#' linked to different rivers. Returns reference gages that appear to duplicate
+#' other reference gages.
+find_duplicate_locations <- function(ghl) {
+  
+  coords <- sf::st_coordinates(sf::st_transform(ghl, 5070))
+  
+  future::plan(future::multisession, workers = 13)
+  
+  clusters <- pbapply::pblapply(split(1:nrow(coords), cut(seq_along(1:nrow(coords)), 500, labels = FALSE)), 
+                                function(set, coords) {
+                                  lapply(set, function(x, coords) {
+                                    dist <- sqrt((coords[x, 1] - coords[, 1]) ^ 2 + (coords[x, 2] - coords[, 2]) ^ 2)
+                                    which(dist < 100)
+                                  }, coords = coords) 
+                                }, coords = coords, cl = "future")
+  
+  clusters <- unlist(clusters, recursive = FALSE)
+  
+  # now remove things that shouldn't be called duplicates.
+  
+  clusters <- pbapply::pblapply(1:length(clusters), function(x) {
+    not_same <- clusters[[x]][clusters[[x]] != x]
+    
+    if(length(not_same) == 0) return(integer())
+    
+    comid <- ghl$nhdpv2_COMID[x]
+    
+    if(is.na(comid)) return(unname(not_same))
+    
+    unname(not_same[ghl$nhdpv2_COMID[not_same] == comid])
+  })
+  
+  clusters <- data.frame(row = 1:length(clusters), cluster = I(clusters))
+  
+  clusters <- dplyr::filter(clusters, lengths(clusters$cluster) > 0)  
+  
+  clusters <- tidyr::unnest(clusters, cluster)
+  
+  ghl$row <- 1:nrow(ghl)
+  
+  clusters <- dplyr::left_join(clusters, dplyr::select(sf::st_drop_geometry(ghl), row, id), by = "row") |>
+    dplyr::left_join(dplyr::select(sf::st_drop_geometry(ghl), row, cluster_id = id), by = c("cluster" = "row")) |>
+    dplyr::select(-row, -cluster)
+  
+  clusters <- dplyr::group_by(clusters, id) |>
+    dplyr::summarise(cluster_id = list(unique(.data$cluster_id)))
+  
+  dplyr::select(ghl, -row) |>
+    dplyr::left_join(clusters, by = "id")
 }

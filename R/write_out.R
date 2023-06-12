@@ -1,13 +1,28 @@
-write_reference <- function(gage_hydrologic_locations, registry, providers, reference_file, nldi_file) {
+write_reference <- function(gage_hydrologic_locations, registry, providers, reference_file, nldi_file,
+                            duplicate_locations) {
+  
+  dup <- select(sf::st_drop_geometry(duplicate_locations), id, cluster_id) |>
+    filter(lengths(duplicate_locations$cluster_id) > 0) |>
+    mutate(uri = paste0("https://geoconnex.us/ref/gages/", id),
+           cluster = paste(paste0("https://geoconnex.us/ref/gages/", cluster_id), collapse = ",")) |>
+    select(uri, cluster) |>
+    distinct()
   
   out <- gage_hydrologic_locations %>%
+    select(-id) |>
     mutate(identifier = paste0(provider, provider_id)) %>%
+    distinct()
+  
+  if(any(duplicated(out$identifier))) stop("duplicate identifiers?")
+  
+  out <- out |>
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
     select(id, uri, name, description, subjectOf, 
            provider, provider_id, nhdpv2_REACHCODE, 
            nhdpv2_REACH_measure, nhdpv2_COMID, mainstem_uri) %>%
-    mutate(id = as.integer(id))
+    mutate(id = as.integer(id)) |>
+    left_join(dup, by = "uri")
   
   write_sf(out, reference_file)
   
@@ -19,6 +34,7 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
 
 write_usgs_reference <- function(gage_hydrologic_locations, registry, providers, usgs_reference_file, usgs_nldi_file) {
   out <- gage_hydrologic_locations %>%
+    select(-id) |>
     mutate(identifier = paste0(provider, provider_id)) %>%
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
