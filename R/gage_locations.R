@@ -52,10 +52,41 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage,
                               `Program Website`,
                               `Organization Website`))
   
+  p_gage_provider$url[p_gage_provider$Organization == "Warner Basin Habitat Partnership"] <- "https://lakecountywsc.com/warner-basin-fip"
+  p_gage_provider$Organization[p_gage_provider$Organization == "Dry Creek Experimental Wastershed"] <- "Dry Creek Experimental Watershed"
+  p_gage_provider$Organization[p_gage_provider$Organization == "Preist River Experimental Forest"] <- "Priest River Experimental Forest" 
+  p_gage_provider$Organization[p_gage_provider$Organization == "Oregon Water Enhancement Board" ] <- "Oregon Watershed Enhancement Board"
+  
+  pnw_gage$data$`organization dataset`[pnw_gage$data$`organization dataset` == "R6"] <- "US Forest Service, Region 6"
+  pnw_gage$data$`organization dataset`[pnw_gage$data$`organization dataset` == "Warner Basin Habitat Partneship (WBAHP)"] <- "Warner Basin Habitat Partnership"
+  pnw_gage$data$`organization dataset`[pnw_gage$data$`organization dataset` == "Columbia SWCD"] <- "Columbia Soil & Water Conservation District"
+  
+  pnw_gage$data$`organization`[pnw_gage$data$`organization` == "HJ Andrews LTER"] <- "HJ Andrews Long Term Ecological Research Site"
+  
+  pnw_gage$data$`organization`[pnw_gage$data$`organization` == "Pierce County, WA"] <- "Pierce County" 
+  
+  # all_orgs <- unique(p_gage_provider$Organization)
+  # 
+  # not_ds <- all_orgs[!all_orgs %in% pnw_gage$data$`organization dataset`]
+  # 
+  # not_ds[!not_ds %in% pnw_gage$data$organization]
+  
+  orgs <- c("Idaho Department of Environmental Quality", 
+            "Idaho Department of Water Resources", 
+            "Idaho Power", 
+            "Oregon Department of Fish and Wildlife", 
+            "Oregon Watershed Enhancement Board", 
+            "Oregon Water Resources Department", 
+            "US Forest Service, Region 6", 
+            "Washington Department of Ecology", 
+            "Washington Department of Fish and Wildlife")
+  
   p_gage_out <- pnw_gage$data |>
+    mutate(org = ifelse(`organization dataset` %in% p_gage_provider$Organization, `organization dataset`, `organization`)) |>
+    filter(.data$org %in% orgs) |>
     left_join(select(p_gage_provider, Organization, provider_url = url), 
-              by = c("organization" = "Organization")) |>
-    mutate(description = paste0(organization, " Streamflow Site")) |>
+              by = c("org" = "Organization")) |>
+    mutate(description = paste0(org, " Streamflow Site")) |>
     mutate(description = ifelse(!`stream type` %in% c("unknown", "NA"),
                                 paste0(description, " Type: ", `stream type`),
                                 description)) |>
