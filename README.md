@@ -1,6 +1,6 @@
 # Reference stream gages for geoconnex.us
 
-This repository houses workflow software for compilation of community reference stream gages. The output of this workflow will generate Persistent Identifiers for the [geoconnex.us system](https://github.com/internetofwater/geoconnex.us), reference landing page content for the [info.geoconnex.us system](https://info.geoconnex.us/), and a set of best available network locations for the [Network Linked Data Index](https://labs.waterdata.usgs.gov/about-nldi/index.html).
+This repository houses workflow software for compilation of community reference stream gages. The output of this workflow will generate Persistent Identifiers for the [geoconnex.us system](https://github.com/internetofwater/geoconnex.us), reference landing page content for the [reference.geoconnex.us system](https://reference.geoconnex.us/), and a set of best available network locations for the [Network Linked Data Index](https://labs.waterdata.usgs.gov/about-nldi/index.html).
 
 These reference locations are intended to be a shared community resource that anyone can contribute to. If a reference location does not exist and data are collected there, the location can and should be contributed such that others can reference the location.
 
@@ -13,8 +13,8 @@ This project exists in a linked data architecture that relies on Web uniform res
 
 In practice, these urls will look like: 
 1. `https://geoconnex.us/ref/gages/1071321` (which will redirect to 2)
-1. `https://info.geoconnex.us/collections/gages/1071321` (which will provide information about the reference location, including a link to 3)
-1. `https://waterdata.usgs.gov/monitoring-location/05430175/` (which is the USGS's site information for this particular reference location.)
+1. `https://reference.geoconnex.us/collections/gages/items/1071321` (which will provide information about the reference location, including a link to 3)
+1. `https://waterdata.usgs.gov/monitoring-location/02469600` (which is the USGS's site information for this particular reference location.)
 
 It is important to maintain this separation because no one organization, other than a community organization set up to fulfill this role, can be expected to be both the community reference catalog and a provider of their own information.  
 
@@ -31,7 +31,7 @@ It is important to maintain this separation because no one organization, other t
 
 First, thank you for considering a contribution! For this to work, everyone with unique monitoring locations need to be willing to contribute those locations here. 
 
-This is a new project and, as such, exactly how contributions are made will be flexible and a work in progress. If you have locations to add, just reach out [in the issues](https://github.com/dblodgett-usgs/ref_gages/issues) and/or submit a pull request. The maintainer(s) are more than happy to coordinate and do whatever legwork is needed to get new reference locations into the registry.
+This is a new project and, as such, exactly how contributions are made will be flexible and a work in progress. If you have locations to add, just reach out [in the issues](https://github.com/internetofwater/ref_gages/issues) and/or submit a pull request. The maintainer(s) are more than happy to coordinate and do whatever legwork is needed to get new reference locations into the registry.
 
 As time goes on and the nature of contributions becomes more clear, this guidance will become more specific, but until then, just get in touch and we'll work together.
 
