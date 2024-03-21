@@ -83,7 +83,7 @@ get_swim_data <- function() {
 }
 
 get_all_mainstems <- function(outdir) {
-  url <- "https://www.hydroshare.org/resource/4a22e88e689949afa1cf71ae009eaf1b/data/contents/mainstems.gpkg"
+  url <- "https://www.hydroshare.org/resource/3cc04df349cd45f38e1637305c98529c/data/contents/mainstems.gpkg"
   
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
   
