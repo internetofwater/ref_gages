@@ -1,8 +1,9 @@
 library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
-                            "sbtools", "readr", "knitr", "mapview"),
-               memory = "transient", garbage_collection = TRUE)
+                            "sbtools", "readr", "knitr", "mapview", "data.table"),
+               memory = "transient", garbage_collection = TRUE,
+               debug = "gage_hydrologic_locations_with_mainstems")
 
 reference_file <- "out/ref_gages.gpkg"
 
@@ -74,7 +75,7 @@ list(
            locations = nwis_gage_hydro_locatons),
       list(provider = "https://cdec.water.ca.gov",
            locations = cdec_gage_address)),
-    nhdpv2_fline = nhdpv2_fline_proc)),
+    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
   
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
                                                                        mainstems, vaa)),

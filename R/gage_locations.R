@@ -180,12 +180,24 @@ get_hydrologic_locations <- function(all_gages, hydrologic_locations, nhdpv2_fli
 add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
   mainstems <- mainstems[,c("id", "uri"), drop = TRUE]
   mainstems$id <- as.integer(mainstems$id)
-  vaa <- right_join(vaa, mainstems, by = c("levelpathi" = "id"))
   
+  vaa <- data.table::as.data.table(vaa)
+  
+  vaa <- data.table::merge.data.table(unique(vaa), unique(mainstems), 
+               by.x = "levelpathi", by.y = "id", 
+               all.x = FALSE, all.y = TRUE)
+
   vaa <- vaa[,c("comid", "uri")]
   
   names(vaa) <- c("comid", "mainstem_uri")
   
-  left_join(gage_hydrologic_locations, vaa, 
-            by = c("nhdpv2_COMID" = "comid"))
+  vaa <- vaa[!is.na(comid)]
+  
+  gage_hydrologic_locations <- data.table::as.data.table(gage_hydrologic_locations)
+  
+  out <- data.table::merge.data.table(gage_hydrologic_locations, vaa, 
+                               by.x = "nhdpv2_COMID", by.y = "comid", 
+                               all.x = TRUE, all.y = FALSE)
+  
+  sf::st_sf(as.data.frame(out))
 }
