@@ -30,7 +30,7 @@ list(
   tar_target("nhdpv2_fline_proc", select(st_transform(nhdpv2_fline, 5070),
                                         COMID, REACHCODE, ToMeas, FromMeas)),
   tar_target("mainstems", get_all_mainstems("data/mainstems/")),
-  tar_target("vaa", get_vaa(atts = c("comid", "levelpathi"),
+  tar_target("vaa", get_vaa(atts = c("comid", "levelpathi", "hydroseq"),
                            updated_network = TRUE)),
   # This function downloads all NWIS sites from the site file
   tar_target("nwis_gage", get_nwis_sites()),
