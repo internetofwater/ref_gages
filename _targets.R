@@ -1,8 +1,9 @@
 library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
-                            "sbtools", "readr", "knitr", "mapview"),
-               memory = "transient", garbage_collection = TRUE)
+                            "sbtools", "readr", "knitr", "mapview", "data.table"),
+               memory = "transient", garbage_collection = TRUE,
+               debug = "gage_hydrologic_locations_with_mainstems")
 
 reference_file <- "out/ref_gages.gpkg"
 
@@ -29,7 +30,7 @@ list(
   tar_target("nhdpv2_fline_proc", select(st_transform(nhdpv2_fline, 5070),
                                         COMID, REACHCODE, ToMeas, FromMeas)),
   tar_target("mainstems", get_all_mainstems("data/mainstems/")),
-  tar_target("vaa", get_vaa(atts = c("comid", "levelpathi"),
+  tar_target("vaa", get_vaa(atts = c("comid", "levelpathi", "hydroseq"),
                            updated_network = TRUE)),
   
   ### Downloaders ###
@@ -75,7 +76,25 @@ list(
   
   tar_target("cdec_gage_address", get_cdec_gage_locations(cdec_gage)),
   
+  
   tar_target("co_gage_address", get_co_gage_locations(co_gage)),
+  
+  # This function takes a table of all NWIS and more in the future gage
+  # locations and a list of provided hydrologic locations. The provider
+  # is a way to join on provider and provider_id in the all_gages input.
+  # The order that hydrologic locations sources are provided will determine
+  # precidence -- last defined wins.
+  tar_target("gage_hydrologic_locations", get_hydrologic_locations(
+    all_gages = gage_locations,
+    hydrologic_locations = list(
+      list(provider = "https://waterdata.usgs.gov",
+           locations = nwis_gage_hydro_locatons),
+      list(provider = "https://cdec.water.ca.gov",
+           locations = cdec_gage_address)),
+    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
+  
+  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
+                                                                       mainstems, vaa)),
   
   ### Registry ###
   # Each entry will have a provider and provider_id that acts as a unique
