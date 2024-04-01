@@ -44,6 +44,7 @@ list(
   tar_target("co_gage", get_co_data()),
   
   # This function downloads all gages from the PNW catalog
+  # WIP: will be incorporated in the future.
   tar_target("pnw_gage", get_pnw_data()),
   
   # This functions loads locally stored streamstats sites.

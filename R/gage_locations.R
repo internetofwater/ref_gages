@@ -1,5 +1,5 @@
 # tar_load(c("nwis_gage", "streamstates_sites", "cdec_gage", "co_gage", "pnw_gage"))
-
+# TODO: finish incorporating PNW Gage -- it is not used right now.
 get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage, pnw_gage) {
   
   sqmi_to_sqkm <- 2.58999
