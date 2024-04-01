@@ -80,23 +80,6 @@ list(
   
   tar_target("co_gage_address", get_co_gage_locations(co_gage)),
   
-  # This function takes a table of all NWIS and more in the future gage
-  # locations and a list of provided hydrologic locations. The provider
-  # is a way to join on provider and provider_id in the all_gages input.
-  # The order that hydrologic locations sources are provided will determine
-  # precidence -- last defined wins.
-  tar_target("gage_hydrologic_locations", get_hydrologic_locations(
-    all_gages = gage_locations,
-    hydrologic_locations = list(
-      list(provider = "https://waterdata.usgs.gov",
-           locations = nwis_gage_hydro_locatons),
-      list(provider = "https://cdec.water.ca.gov",
-           locations = cdec_gage_address)),
-    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
-  
-  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
-                                                                       mainstems, vaa)),
-  
   ### Registry ###
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
@@ -132,7 +115,7 @@ list(
            locations = cdec_gage_address),
       list(provider = "https://dwr.state.co.us",
            locations = co_gage_address)),
-    nhdpv2_fline = nhdpv2_fline_proc)),
+    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
   
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
                                                                        mainstems, vaa)),

@@ -263,17 +263,6 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
 
 add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
 
-  mainstems <- mainstems[,c("id", "uri"), drop = TRUE]
-  mainstems$id <- as.integer(mainstems$id)
-  vaa <- right_join(vaa, mainstems, by = c("levelpathi" = "id"))
-  
-  vaa <- vaa[,c("comid", "uri")]
-  
-  names(vaa) <- c("comid", "mainstem_uri")
-  
-  left_join(gage_hydrologic_locations, vaa, 
-            by = c("nhdpv2_COMID" = "comid"))
-  
   mainstems <- mainstems[,c("head_nhdpv2_COMID", "uri"), drop = TRUE]
   mainstems$head_nhdpv2_COMID <- as.integer(gsub("https://geoconnex.us/nhdplusv2/comid/", "", 
                                                  mainstems$head_nhdpv2_COMID))
