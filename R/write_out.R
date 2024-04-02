@@ -1,11 +1,15 @@
 write_reference <- function(gage_hydrologic_locations, registry, providers, reference_file, nldi_file,
                             duplicate_locations) {
   
-  dup <- select(sf::st_drop_geometry(duplicate_locations), id, cluster_id) |>
-    filter(lengths(duplicate_locations$cluster_id) > 0) |>
-    mutate(uri = paste0("https://geoconnex.us/ref/gages/", id),
-           cluster = paste(paste0("https://geoconnex.us/ref/gages/", cluster_id), collapse = ",")) |>
-    select(uri, cluster) |>
+  duplicate_locations$cluster_string <- unlist(lapply(duplicate_locations$cluster_id, \(x) {
+    if(is.null(x)) return("")
+    paste(paste0("https://geoconnex.us/ref/gages/", x), collapse = ",")
+    }))
+  
+  dup <- select(sf::st_drop_geometry(duplicate_locations), id, cluster_string) |>
+    filter(cluster_string != "") |>
+    mutate(uri = paste0("https://geoconnex.us/ref/gages/", id)) |>
+    select(uri, cluster = cluster_string) |>
     distinct()
   
   out <- gage_hydrologic_locations %>%
