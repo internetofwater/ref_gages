@@ -4,6 +4,63 @@ This repository houses workflow software for compilation of community reference 
 
 These reference locations are intended to be a shared community resource that anyone can contribute to. If a reference location does not exist and data are collected there, the location can and should be contributed such that others can reference the location.
 
+Workflow:
+
+The diagram below illustrates the overall workflow implemented in this repository.
+
+The workflow exists in four phases. 
+
+1. load data and update registry
+1. establish unique and reference spatial locations
+1. establish hydrologic locations
+1. write reference output
+
+Unique logic is introduced for each provider in some cases.
+
+```mermaid
+graph LR
+  style Graph fill:#FFFFFF,stroke:#000000;
+  subgraph Graph
+    direction LR
+    xdc890725c94814e0(["cdec_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
+    xc790fbbfe941e20f(["co_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
+    x3816fb2c1b52106c(["nwis_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
+    xe86264e228962974(["pnw_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
+    x592b71b0a3906fc3(["streamstats_sites"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
+    x86f07777fbb7e7e4(["nhdpv2_gage"]):::completed --> x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed
+    x72e6641d7003f35e(["swims_gage"]):::completed --> x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed
+    xdc890725c94814e0(["cdec_gage"]):::completed --> xc2983822f18540b4(["cdec_gage_address"]):::completed
+    xc2983822f18540b4(["cdec_gage_address"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    x4201776ad8616358(["co_gage_address"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    xe90cfa4169672250(["gage_locations"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    x6c59ac2b7db5bcf8(["nhdpv2_fline_proc"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    xb37ed462743750b6(["ref_locations"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
+    xd20e6d3eb3d2523a(["duplicate_locations"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
+    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
+    x2ed57357c0c06777(["providers"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
+    x7b8f98c0b818a18a(["registry"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
+    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> xd20e6d3eb3d2523a(["duplicate_locations"]):::completed
+    x7b8f98c0b818a18a(["registry"]):::completed --> x164a1fd6fa5b800d(["registry_out"]):::completed
+    xe90cfa4169672250(["gage_locations"]):::completed --> x7b8f98c0b818a18a(["registry"]):::completed
+    x2ed57357c0c06777(["providers"]):::completed --> x7b8f98c0b818a18a(["registry"]):::completed
+    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
+    x2ed57357c0c06777(["providers"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
+    x7b8f98c0b818a18a(["registry"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
+    xe90cfa4169672250(["gage_locations"]):::completed --> xb37ed462743750b6(["ref_locations"]):::completed
+    x2ed57357c0c06777(["providers"]):::completed --> xb37ed462743750b6(["ref_locations"]):::completed
+    x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
+    xaa2c6f0a5f97fbb7(["mainstems"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
+    x36d41497a1d9cc73(["vaa"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
+    xc790fbbfe941e20f(["co_gage"]):::completed --> x4201776ad8616358(["co_gage_address"]):::completed
+    x45079be5e9dad71e(["nat_db"]):::completed --> x86f07777fbb7e7e4(["nhdpv2_gage"]):::completed
+    x0d37c0787182d513(["nhdpv2_fline"]):::completed --> x6c59ac2b7db5bcf8(["nhdpv2_fline_proc"]):::completed
+    x60fc93676537b647(["providers_csv"]):::completed --> x2ed57357c0c06777(["providers"]):::completed
+    x45079be5e9dad71e(["nat_db"]):::completed --> x0d37c0787182d513(["nhdpv2_fline"]):::completed
+  end
+  classDef completed stroke:#000000,color:#000000,fill:#85F1FF;
+```
+
 # Architecture
 
 This project exists in a linked data architecture that relies on Web uniform resource identifiers (URIs) for both digital and real world entities. There are three types of resources in the architecture:
