@@ -3,7 +3,7 @@ library(targets)
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview", "data.table"),
                memory = "transient", garbage_collection = TRUE,
-               debug = "gage_hydrologic_locations_with_mainstems")
+               debug = "gage_hydrologic_locations")
 
 reference_file <- "out/ref_gages.gpkg"
 
@@ -63,6 +63,8 @@ list(
                                                   pnw_gage)),
   
   ### location normalization ###
+  # these targets generate a normalized form set of gages from each source.
+  
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
   tar_target("nhdpv2_gage", select(read_sf(nat_db, "Gage"), 
