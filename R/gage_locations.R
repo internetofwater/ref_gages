@@ -161,7 +161,7 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
 get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locations, nhdpv2_fline,
                                      da_diff_thresh = 0.5, search_radius_m = 500,
                                      max_matches_in_radius = 5) {
-  browser()
+  
   v2_area <- select(nhdplusTools::get_vaa(), 
                     nhdpv2_COMID = comid, 
                     nhdpv2_totdasqkm = totdasqkm)
@@ -196,7 +196,7 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
       hl$locations$nhdpv2_REACH_measure
     all_gages$nhdpv2_COMID[provider_selector][matcher] <- 
       hl$locations$nhdpv2_COMID
-    all_gages$link_source[provider_selector][matcher] <- 
+    all_gages$nhdpv2_link_source[provider_selector][matcher] <- 
       hl$locations$nhdpv2_link_source
     
     # Some gages missing reachcode/measure but have COMID
@@ -214,11 +214,28 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
   
   all_gages <- left_join(all_gages, v2_area, by = "nhdpv2_COMID")
   
-  diff_da <- abs(all_gages$nhdpv2_totdasqkm -
-                   all_gages$drainage_area_sqkm) / 
+  all_gages$da_diff <- all_gages$nhdpv2_totdasqkm - all_gages$drainage_area_sqkm
+  
+  norm_diff_da <- all_gages$da_diff / 
     all_gages$drainage_area_sqkm
   
-  bad_da <- all_gages[!is.na(diff_da) & diff_da > da_diff_thresh, ]
+  abs_norm_diff_da <- abs(norm_diff_da)
+  
+  bad_da <- all_gages[!is.na(all_gages$da_diff) & # has an estimate
+                        
+                        ((all_gages$drainage_area_sqkm <= 100 & 
+                            # use unnormalized because differences so quantized 
+                            # due to catchment resolution.
+                            # when da_diff is negative, use within 25%
+                            (all_gages$da_diff > 10 | (all_gages$da_diff < 0 & abs_norm_diff_da > 0.25))) |
+                         
+                           # is tens of catchments and within 10%
+                          (all_gages$drainage_area_sqkm > 100 & 
+                             abs_norm_diff_da > (0.1)) | 
+                           
+                           # is hundreds of catchments and within 5%
+                           (all_gages$drainage_area_sqkm > 500 & 
+                             abs_norm_diff_da > (0.05))), ] 
   
   update_index <- which(is.na(all_gages$nhdpv2_COMID) | 
                           all_gages$provider_id %in% bad_da$provider_id)
@@ -261,12 +278,16 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
   linked_gages <- select(no_location, provider_id) |>
     mutate(id = seq_len(n())) |>
     left_join(select(linked_gages_dedup, 
-                     id, COMID, REACHCODE, REACH_meas), 
+                     id, COMID, REACHCODE, REACH_meas, nhdpv2_totdasqkm), 
               by = "id")
   
   all_gages$nhdpv2_REACHCODE[update_index] <- linked_gages$REACHCODE
   all_gages$nhdpv2_REACH_measure[update_index] <- linked_gages$REACH_meas
   all_gages$nhdpv2_COMID[update_index] <- linked_gages$COMID
+  all_gages$nhdpv2_totdasqkm[update_index] <- linked_gages$nhdpv2_totdasqkm
+  all_gages$nhdpv2_link_source[update_index] <- rep("https://github.com/internetofwater/ref_gages", nrow(linked_gages))
+  
+  all_gages$da_diff <- all_gages$nhdpv2_totdasqkm - all_gages$drainage_area_sqkm
   
   all_gages
 }
