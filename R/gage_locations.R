@@ -161,7 +161,7 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
 get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locations, nhdpv2_fline,
                                      da_diff_thresh = 0.5, search_radius_m = 500,
                                      max_matches_in_radius = 5) {
-  
+
   v2_area <- select(nhdplusTools::get_vaa(), 
                     nhdpv2_COMID = comid, 
                     nhdpv2_totdasqkm = totdasqkm)
@@ -179,6 +179,7 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
   all_gages$nhdpv2_REACH_measure <- NA
   all_gages$nhdpv2_COMID <- NA
   all_gages$nhdpv2_link_source <- NA
+  all_gages$nhdpv2_offset_m <- NA
   
   for(hl in hydrologic_locations) {
     
@@ -238,6 +239,7 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
                              abs_norm_diff_da > (0.05))), ] 
   
   update_index <- which(is.na(all_gages$nhdpv2_COMID) | 
+                          !all_gages$nhdpv2_COMID %in% nhdpv2_fline$COMID | 
                           all_gages$provider_id %in% bad_da$provider_id)
   
   no_location <- all_gages[update_index, ]
@@ -278,7 +280,7 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
   linked_gages <- select(no_location, provider_id) |>
     mutate(id = seq_len(n())) |>
     left_join(select(linked_gages_dedup, 
-                     id, COMID, REACHCODE, REACH_meas, nhdpv2_totdasqkm), 
+                     id, COMID, REACHCODE, REACH_meas, nhdpv2_totdasqkm, offset), 
               by = "id")
   
   all_gages$nhdpv2_REACHCODE[update_index] <- linked_gages$REACHCODE
@@ -286,14 +288,41 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
   all_gages$nhdpv2_COMID[update_index] <- linked_gages$COMID
   all_gages$nhdpv2_totdasqkm[update_index] <- linked_gages$nhdpv2_totdasqkm
   all_gages$nhdpv2_link_source[update_index] <- rep("https://github.com/internetofwater/ref_gages", nrow(linked_gages))
-  
+  all_gages$nhdpv2_offset_m[update_index] <- linked_gages$offset
+
+  all_gages$nhdpv2_totdasqkm <- round(all_gages$nhdpv2_totdasqkm, digits = 1)
+  all_gages$drainage_area_sqkm <- round(all_gages$drainage_area_sqkm, digits = 1)
+    
   all_gages$da_diff <- all_gages$nhdpv2_totdasqkm - all_gages$drainage_area_sqkm
   
-  all_gages
+  add_offset(all_gages, nhdpv2_fline)
+}
+
+add_offset <- function(all_gages, nhdpv2_fline) {
+  
+  missing_offset <- all_gages |>
+    filter(is.na(nhdpv2_offset_m) & !is.na(nhdpv2_REACHCODE))
+  
+  missing_offset <- sf::st_transform(missing_offset, sf::st_crs(nhdpv2_fline))
+  
+  new_indexes <- hydroloom::index_points_to_lines(nhdpv2_fline, sf::st_geometry(missing_offset),
+                                                  search_radius =  units::set_units(100000, "meters"),
+                                                  ids = as.integer(missing_offset$nhdpv2_COMID))
+  
+  missing_offset$point_id <- seq_len(nrow(missing_offset))
+  
+  missing_offset <- left_join(missing_offset, new_indexes, by = "point_id")
+  
+  missing_offset$nhdpv2_offset_m <- missing_offset$offset
+  
+  missing_offset <- sf::st_transform(missing_offset, sf::st_crs(all_gages))
+  
+  dplyr::bind_rows(filter(all_gages, !id %in% missing_offset$id),
+                          select(missing_offset, all_of(names(all_gages))))
 }
 
 add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
-
+  
   mainstems <- mainstems[,c("head_nhdpv2_COMID", "uri"), drop = TRUE]
   mainstems$head_nhdpv2_COMID <- as.integer(gsub("https://geoconnex.us/nhdplusv2/comid/", "", 
                                                  mainstems$head_nhdpv2_COMID))
