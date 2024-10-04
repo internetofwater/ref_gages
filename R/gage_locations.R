@@ -306,7 +306,7 @@ add_offset <- function(all_gages, nhdpv2_fline) {
   missing_offset <- sf::st_transform(missing_offset, sf::st_crs(nhdpv2_fline))
   
   new_indexes <- hydroloom::index_points_to_lines(nhdpv2_fline, sf::st_geometry(missing_offset),
-                                                  search_radius =  units::set_units(100000, "meters"),
+                                                  search_radius =  units::set_units(1000, "meters"),
                                                   ids = as.integer(missing_offset$nhdpv2_COMID))
   
   missing_offset$point_id <- seq_len(nrow(missing_offset))
@@ -316,6 +316,12 @@ add_offset <- function(all_gages, nhdpv2_fline) {
   missing_offset$nhdpv2_offset_m <- missing_offset$offset
   
   missing_offset <- sf::st_transform(missing_offset, sf::st_crs(all_gages))
+  
+  missing_offset$nhdpv2_REACHCODE[is.na(missing_offset$nhdpv2_offset_m)] <- NA
+  missing_offset$nhdpv2_REACH_measure[is.na(missing_offset$nhdpv2_offset_m)] <- NA
+  missing_offset$nhdpv2_COMID[is.na(missing_offset$nhdpv2_offset_m)] <- NA
+  missing_offset$nhdpv2_totdasqkm[is.na(missing_offset$nhdpv2_offset_m)] <- NA
+  missing_offset$nhdpv2_link_source[is.na(missing_offset$nhdpv2_offset_m)] <- NA
   
   dplyr::bind_rows(filter(all_gages, !id %in% missing_offset$id),
                           select(missing_offset, all_of(names(all_gages))))

@@ -2,8 +2,7 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview", "data.table"),
-               memory = "transient", garbage_collection = TRUE,
-               debug = "gage_hydrologic_locations")
+               memory = "transient", garbage_collection = TRUE)
 
 # primary output file for geoconnex reference server
 reference_file <- "out/ref_gages.gpkg"
@@ -150,4 +149,6 @@ list(
   tar_target("registry_out", write_registry(registry, registry_csv)),
   
   tar_target("validation", validate_ref_gage(registry_csv, reference_file, 
-                                             reference_locations_csv, reference_out)))
+                                             reference_locations_csv, 
+                                             providers_lookup_csv,
+                                             reference_out)))
