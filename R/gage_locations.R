@@ -317,11 +317,7 @@ add_offset <- function(all_gages, nhdpv2_fline) {
   
   missing_offset <- sf::st_transform(missing_offset, sf::st_crs(all_gages))
   
-  missing_offset$nhdpv2_REACHCODE[is.na(missing_offset$nhdpv2_offset_m)] <- NA
-  missing_offset$nhdpv2_REACH_measure[is.na(missing_offset$nhdpv2_offset_m)] <- NA
-  missing_offset$nhdpv2_COMID[is.na(missing_offset$nhdpv2_offset_m)] <- NA
-  missing_offset$nhdpv2_totdasqkm[is.na(missing_offset$nhdpv2_offset_m)] <- NA
-  missing_offset$nhdpv2_link_source[is.na(missing_offset$nhdpv2_offset_m)] <- NA
+  missing_offset[is.na(missing_offset$nhdpv2_offset_m), c('nhdpv2_REACHCODE', 'nhdpv2_REACH_measure','nhdpv2_COMID','nhdpv2_totdasqkm','nhdpv2_link_source')] <- NA
   
   dplyr::bind_rows(filter(all_gages, !id %in% missing_offset$id),
                           select(missing_offset, all_of(names(all_gages))))
