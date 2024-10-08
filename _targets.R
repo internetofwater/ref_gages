@@ -2,10 +2,20 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview", "data.table"),
-               memory = "transient", garbage_collection = TRUE,
-               debug = "gage_hydrologic_locations_with_mainstems")
+               memory = "transient", garbage_collection = TRUE)
 
+# primary output file for geoconnex reference server
 reference_file <- "out/ref_gages.gpkg"
+
+# registry csv file which is checked in
+registry_csv <- "reg/ref_gages.csv"
+
+# locations for all known reference gages
+# https://github.com/internetofwater/ref_gages/issues/33
+reference_locations_csv <- "reg/ref_locations.csv"
+
+# contains information for each gage provider
+providers_lookup_csv <- "reg/providers.csv"
 
 # this is a set of location overrides
 nwis_hydrolocation <- "data/nwis_hydrolocations.csv"
@@ -63,6 +73,8 @@ list(
                                                   pnw_gage)),
   
   ### location normalization ###
+  # these targets generate a normalized form set of gages from each source.
+  
   # This Gage layer from NHDPlusV2 is a basic starting point for
   # NWIS gage locations.
   tar_target("nhdpv2_gage", select(read_sf(nat_db, "Gage"), 
@@ -84,19 +96,19 @@ list(
   # Each entry will have a provider and provider_id that acts as a unique
   # primary key. The existing registry file will have a unique attribute
   # that contains that primary key. 
-  tar_target("providers_csv", command = "reg/providers.csv", format = "file"),
+  tar_target("providers_csv", providers_lookup_csv, format = "file"),
   tar_target("providers", read_csv(providers_csv)),
   
   
   tar_target("registry", build_registry(gage_locations,
-                                        registry = "reg/ref_gages.csv",
+                                        registry = registry_csv,
                                         providers = providers)),
   
   # Also create a table of reference locations for the registered gages.
   # unlike the registry, this may update to have the "best" location of a gage. 
   tar_target("ref_locations", build_reference_location(gage_locations, 
-                                                       reference_locations = "reg/ref_locations.csv", 
-                                                       registry = "reg/ref_gages.csv", 
+                                                       reference_locations = reference_locations_csv, 
+                                                       registry = registry_csv, 
                                                        providers = providers)),
   
   ### spatial integration ###
@@ -134,4 +146,9 @@ list(
                                               registry, providers, reference_file, 
                                               nldi_file,
                                               duplicate_locations = duplicate_locations)),
-  tar_target("registry_out", write_registry(registry, "reg/ref_gages.csv")))
+  tar_target("registry_out", write_registry(registry, registry_csv)),
+  
+  tar_target("validation", validate_ref_gage(registry_csv, reference_file, 
+                                             reference_locations_csv, 
+                                             providers_lookup_csv,
+                                             reference_out)))

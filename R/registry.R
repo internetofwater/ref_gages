@@ -93,7 +93,10 @@ build_reference_location <- function(gl, reference_locations, registry, provider
   if(nrow(loc) == 0) return(existing_locations)
   
   # else return all the old plus some new
-  bind_rows(existing_locations, loc)
+  out <- bind_rows(existing_locations, loc)
   
+  write_csv(out, reference_locations)
+  
+  out
 }
   

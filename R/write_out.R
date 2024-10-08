@@ -1,6 +1,6 @@
 write_reference <- function(gage_hydrologic_locations, registry, providers, reference_file, nldi_file,
                             duplicate_locations) {
-  
+
   duplicate_locations$cluster_string <- unlist(lapply(duplicate_locations$cluster_id, \(x) {
     if(is.null(x)) return("")
     paste(paste0("https://geoconnex.us/ref/gages/", x), collapse = ",")
@@ -18,13 +18,16 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
     distinct()
   
   if(any(duplicated(out$identifier))) stop("duplicate identifiers?")
-  
+
   out <- out |>
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
     select(id, uri, name, description, subjectOf, 
            provider, provider_id, nhdpv2_REACHCODE, 
-           nhdpv2_REACH_measure, nhdpv2_COMID, mainstem_uri) %>%
+           nhdpv2_REACH_measure, nhdpv2_COMID, nhdpv2_totdasqkm, 
+           nhdpv2_link_source, nhdpv2_offset_m,
+           gage_totdasqkm = drainage_area_sqkm, 
+           dasqkm_diff = da_diff, mainstem_uri) %>%
     mutate(id = as.integer(id)) |>
     left_join(dup, by = "uri")
   
@@ -43,7 +46,8 @@ write_usgs_reference <- function(gage_hydrologic_locations, registry, providers,
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
     filter(provider == "https://waterdata.usgs.gov") %>%
-    select(id, uri, name, description, subjectOf, provider, provider_id, nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID) %>%
+    select(id, uri, name, description, subjectOf, provider, provider_id, 
+           nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID) %>%
     mutate(id = as.integer(id))
   
   out$id <- out$provider_id
