@@ -230,11 +230,13 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
                             # when da_diff is negative, use within 25%
                             (all_gages$da_diff > 10 | (all_gages$da_diff < 0 & abs_norm_diff_da > 0.25))) |
                          
-                           # is tens of catchments and within 10%
+                           # is something link ten or more catchments and within 10%
+                           # drainage area threshold was selected based on distribution of catchment size.
                           (all_gages$drainage_area_sqkm > 100 & 
                              abs_norm_diff_da > (0.1)) | 
                            
-                           # is hundreds of catchments and within 5%
+                           # is something like a hundred or more catchments and within 5%
+                           # drainage area threshold was selected based on distribution of catchment size.
                            (all_gages$drainage_area_sqkm > 500 & 
                              abs_norm_diff_da > (0.05))), ] 
   
