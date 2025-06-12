@@ -325,7 +325,7 @@ add_offset <- function(all_gages, nhdpv2_fline) {
                           select(missing_offset, all_of(names(all_gages))))
 }
 
-add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
+add_mainstems_and_nws <- function(gage_hydrologic_locations, mainstems, vaa, nws_gages) {
   
   mainstems <- mainstems[,c("head_nhdpv2_COMID", "uri"), drop = TRUE]
   mainstems$head_nhdpv2_COMID <- as.integer(gsub("https://geoconnex.us/nhdplusv2/comid/", "", 
@@ -343,8 +343,18 @@ add_mainstems <- function(gage_hydrologic_locations, mainstems, vaa) {
                by = "levelpathi") |>
     select(-levelpathi, comid, mainstem_uri = uri)
   
-  dplyr::left_join(gage_hydrologic_locations, mainstem_lookup, by = c("nhdpv2_COMID" = "comid"))
+  out <- dplyr::left_join(gage_hydrologic_locations, mainstem_lookup, by = c("nhdpv2_COMID" = "comid"))
+  
+  nws_table <- nws_gages |>
+    dplyr::filter(grepl("geological|usgs", `attribution wording`, ignore.case = TRUE) & !is.na(`usgs id`)) |>
+    dplyr::select(usgs_id = `usgs id`, nws_url = `hydrograph page`) |>
+    dplyr::distinct() |>
+    dplyr::group_by(usgs_id) |>
+    dplyr::summarise(nws_url = list(unique(.data$nws_url)))
+  
+  out <- dplyr::left_join(out, nws_table, by = c("provider_id" = "usgs_id"))
 
+  out
 }
 
 #' find duplicate locations

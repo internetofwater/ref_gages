@@ -2,7 +2,7 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview", "data.table"),
-               memory = "transient", garbage_collection = TRUE)
+               memory = "transient", garbage_collection = TRUE, debug = "reference_out")
 
 # primary output file for geoconnex reference server
 reference_file <- "out/ref_gages.gpkg"
@@ -62,6 +62,9 @@ list(
   
   # This function loads the SWIMS gage locations.
   tar_target("swims_gage", get_swim_data()),
+  
+  # This function downloads and loads a table of NWS forcast sites.
+  tar_target("nws_gages", get_nws_data()),
   
   ### metadata integration ###
   # this function filters and renames gage locations to a common table
@@ -129,8 +132,8 @@ list(
            locations = co_gage_address)),
     nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
   
-  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
-                                                                       mainstems, vaa)),
+  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems_and_nws(gage_hydrologic_locations,
+                                                                       mainstems, vaa, nws_gages)),
   
   # based on all known gages from all providers, find potential duplicates.
   # starts by finding gages within 100m of eachother then checks if they are on different flowlines.
