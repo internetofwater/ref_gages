@@ -2,7 +2,7 @@ library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
                             "sbtools", "readr", "knitr", "mapview", "data.table"),
-               memory = "transient", garbage_collection = TRUE, debug = "reference_out")
+               memory = "transient", garbage_collection = TRUE)
 
 # primary output file for geoconnex reference server
 reference_file <- "out/ref_gages.gpkg"
@@ -18,7 +18,7 @@ reference_locations_csv <- "reg/ref_locations.csv"
 providers_lookup_csv <- "reg/providers.csv"
 
 # this is a set of location overrides
-nwis_hydrolocation <- "data/nwis_hydrolocations.csv"
+nwis_hydrolocation_csv <- "data/nwis_hydrolocations.csv"
 
 # These are generated for a USGS namespace in geoconnex.
 usgs_reference_file <- "out/usgs_gages.gpkg"
@@ -86,6 +86,7 @@ list(
                                    nhdpv2_COMID = FLComID,
                                    provider_id = SOURCE_FEA)),
   
+  tar_target("nwis_hydrolocation", nwis_hydrolocation_csv, format = "file"),
   tar_target("nwis_gage_hydro_locatons", get_nwis_hydrolocations(nhdpv2_gage,
                                                                  swims_gage,
                                                                  nwis_hydrolocation)),
