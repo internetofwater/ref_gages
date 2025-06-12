@@ -18,7 +18,7 @@ reference_locations_csv <- "reg/ref_locations.csv"
 providers_lookup_csv <- "reg/providers.csv"
 
 # this is a set of location overrides
-nwis_hydrolocation <- "data/nwis_hydrolocations.csv"
+nwis_hydrolocation_csv <- "data/nwis_hydrolocations.csv"
 
 # These are generated for a USGS namespace in geoconnex.
 usgs_reference_file <- "out/usgs_gages.gpkg"
@@ -63,6 +63,9 @@ list(
   # This function loads the SWIMS gage locations.
   tar_target("swims_gage", get_swim_data()),
   
+  # This function downloads and loads a table of NWS forcast sites.
+  tar_target("nws_gages", get_nws_data()),
+  
   ### metadata integration ###
   # this function filters and renames gage locations to a common table
   # It does not handle location information and duplicates are fine at this stage.
@@ -83,6 +86,7 @@ list(
                                    nhdpv2_COMID = FLComID,
                                    provider_id = SOURCE_FEA)),
   
+  tar_target("nwis_hydrolocation", nwis_hydrolocation_csv, format = "file"),
   tar_target("nwis_gage_hydro_locatons", get_nwis_hydrolocations(nhdpv2_gage,
                                                                  swims_gage,
                                                                  nwis_hydrolocation)),
@@ -129,8 +133,8 @@ list(
            locations = co_gage_address)),
     nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
   
-  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems(gage_hydrologic_locations,
-                                                                       mainstems, vaa)),
+  tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems_and_nws(gage_hydrologic_locations,
+                                                                       mainstems, vaa, nws_gages)),
   
   # based on all known gages from all providers, find potential duplicates.
   # starts by finding gages within 100m of eachother then checks if they are on different flowlines.

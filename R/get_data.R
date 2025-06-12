@@ -141,3 +141,9 @@ get_all_mainstems <- function(outdir) {
   
   sf::read_sf(f)
 }
+
+get_nws_data <- function() {
+  url <- "https://water.noaa.gov/resources/downloads/reports/nwps_all_gauges_report.csv"
+  
+  readr::read_csv(url)
+}
