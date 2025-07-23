@@ -89,6 +89,7 @@ list(
   tar_target("nwis_hydrolocation", nwis_hydrolocation_csv, format = "file"),
   tar_target("nwis_gage_hydro_locatons", get_nwis_hydrolocations(nhdpv2_gage,
                                                                  swims_gage,
+                                                                 gage_locations,
                                                                  nwis_hydrolocation)),
   
   tar_target("cdec_gage_address", get_cdec_gage_locations(cdec_gage)),

@@ -125,6 +125,7 @@ get_co_gage_locations <- function(gages) {
 
 get_nwis_hydrolocations <- function(nhdpv2_gage, 
                                     swim_gage,
+                                    gage_locations,
                                     nwis_hydrolocation) {
   
   nh <- read.csv(nwis_hydrolocation, colClasses = c("character", 
@@ -136,7 +137,25 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
   
   if(any(swim_gage$Gage_no %in% nh$provider_id)) stop("duplicates in override registry")
   
+  check <- swim_gage |>
+    bind_cols(sf::st_coordinates(sf::st_transform(swim_gage, 5070)))|>
+    select(Gage_no, x_swim = X, y_swim = Y) |>
+    sf::st_drop_geometry() |>
+    left_join(select(gage_locations, provider_id), 
+              by = c("Gage_no" = "provider_id")) |>
+    sf::st_sf()
+  
+  check <- check |>
+    bind_cols(sf::st_coordinates(sf::st_transform(check, 5070))) |>
+    rename(x_nwis = X, y_nwis = Y) |>
+    sf::st_drop_geometry()
+  
+  check <- mutate(check, dist = sqrt((y_nwis - y_swim)^2 + (x_nwis - x_swim)^2))
+  
+  dontuse <- check$Gage_no[check$dist > 1000]
+  
   swim_gage <- sf::st_drop_geometry(swim_gage) |>
+    filter(!Gage_no %in% dontuse) |>
     select(provider_id = Gage_no, 
            nhdpv2_COMID = COMID,
            nhdpv2_REACHCODE = REACHCODE,
@@ -317,7 +336,7 @@ add_offset <- function(all_gages, nhdpv2_fline) {
   missing_offset <- sf::st_transform(missing_offset, sf::st_crs(nhdpv2_fline))
   
   new_indexes <- hydroloom::index_points_to_lines(nhdpv2_fline, sf::st_geometry(missing_offset),
-                                                  search_radius =  units::set_units(1000, "meters"),
+                                                  search_radius =  units::set_units(10000, "meters"),
                                                   ids = as.integer(missing_offset$nhdpv2_COMID))
   
   missing_offset$point_id <- seq_len(nrow(missing_offset))
