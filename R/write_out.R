@@ -3,7 +3,14 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
 
   duplicate_locations$cluster_string <- unlist(lapply(duplicate_locations$cluster_id, \(x) {
     if(is.null(x)) return("")
-    paste(paste0("https://geoconnex.us/ref/gages/", x), collapse = ",")
+    
+    if(all(is.na(x))) return("")
+    
+    out <- paste0("https://geoconnex.us/ref/gages/", x)
+    
+    out <- out[out != "https://geoconnex.us/ref/gages/NA"]
+    
+    out <- paste(out, collapse = ",")
     }))
   
   dup <- select(sf::st_drop_geometry(duplicate_locations), id, cluster_string) |>
