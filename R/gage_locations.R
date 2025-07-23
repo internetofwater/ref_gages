@@ -164,7 +164,8 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
 
   v2_area <- select(nhdplusTools::get_vaa(), 
                     nhdpv2_COMID = comid, 
-                    nhdpv2_totdasqkm = totdasqkm)
+                    nhdpv2_totdasqkm = totdasqkm,
+                    path = levelpathi)
   
   providers <- readr::read_csv("reg/providers.csv")
   ref_locations$provider <- providers$provider[ref_locations$provider]
@@ -264,17 +265,25 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
     left_join(v2_area, by = c("COMID" = "nhdpv2_COMID")) |>
     mutate(da_diff = abs(drainage_area_sqkm - nhdpv2_totdasqkm))
   
-  linked_gages_dedup <- bind_rows(
+  # we want to disambiguate to the best river using drainage area
+  # https://github.com/internetofwater/ref_gages/issues/16
+  best_path <- group_by(linked_gages, provider_id) |>
+    filter(!is.na(da_diff)) |>
+    filter(da_diff == min(da_diff)) |>
+    select(provider_id, best_path = path) |>
+    filter(best_path == min(best_path)) |>
+    distinct()
+  
+  linked_gages <- left_join(linked_gages, best_path, 
+                            by = "provider_id") |>
+    mutate(best_path = ifelse(is.na(best_path), path, best_path)) |>
+    filter(path == best_path)
+  
+  linked_gages_dedup <-
     linked_gages |>
-      group_by(provider_id) |>
-      filter(is.na(da_diff)) |>
-      filter(offset == min(offset)) |>
-      ungroup(), 
-    linked_gages |>
-      group_by(provider_id) |>
-      filter(!is.na(da_diff)) |>
-      filter(da_diff == min(da_diff)) |>
-      ungroup()) |>
+    group_by(provider_id) |>
+    filter(offset == min(offset)) |>
+    ungroup() |>
     group_by(provider_id) |>
     filter(n() == 1) |>
     ungroup()
