@@ -154,13 +154,17 @@ get_nwis_hydrolocations <- function(nhdpv2_gage,
   
   dontuse <- check$Gage_no[check$dist > 1000]
   
+  swim_gage <- mutate(swim_gage, 
+                      COMID = ifelse(COMID == -9999, NA, COMID), 
+                      REACHCODE = ifelse(REACHCODE == -9999, NA, REACHCODE), 
+                      REACH_meas = ifelse(REACH_meas == -9999, NA, REACH_meas))
+  
   swim_gage <- sf::st_drop_geometry(swim_gage) |>
     filter(!Gage_no %in% dontuse) |>
     select(provider_id = Gage_no, 
            nhdpv2_COMID = COMID,
            nhdpv2_REACHCODE = REACHCODE,
            nhdpv2_REACH_measure = REACH_meas) |>
-    filter(nhdpv2_COMID != -9999) |>
     mutate(nhdpv2_link_source = "https://doi.org/10.5066/P9J5CK2Y")
 
   nh <- bind_rows(nh, swim_gage)
@@ -260,8 +264,8 @@ get_hydrologic_locations <- function(all_gages, ref_locations, hydrologic_locati
                            (all_gages$drainage_area_sqkm > 500 & 
                              abs_norm_diff_da > (0.05))), ] 
   
-  update_index <- which(is.na(all_gages$nhdpv2_COMID) | 
-                          !all_gages$nhdpv2_COMID %in% nhdpv2_fline$COMID | 
+  update_index <- which((is.na(all_gages$nhdpv2_COMID) & is.na(all_gages$nhdpv2_link_source))| 
+                        (!is.na(all_gages$nhdpv2_COMID) & !all_gages$nhdpv2_COMID %in% nhdpv2_fline$COMID) | 
                           all_gages$provider_id %in% bad_da$provider_id)
   
   no_location <- all_gages[update_index, ]
