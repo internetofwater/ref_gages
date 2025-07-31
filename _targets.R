@@ -17,9 +17,6 @@ reference_locations_csv <- "reg/ref_locations.csv"
 # contains information for each gage provider
 providers_lookup_csv <- "reg/providers.csv"
 
-# this is a set of location overrides
-nwis_hydrolocation_csv <- "data/nwis_hydrolocations.csv"
-
 # These are generated for a USGS namespace in geoconnex.
 usgs_reference_file <- "out/usgs_gages.gpkg"
 usgs_nldi_file <- "out/usgs_nldi_gages.geojson"
@@ -60,8 +57,8 @@ list(
   # This functions loads locally stored streamstats sites.
   tar_target("streamstats_sites", get_streamstats_sites()),
   
-  # This function loads the SWIMS gage locations.
-  tar_target("swims_gage", get_swim_data()),
+  # This function loads the SWIMS gage locations and other gage locations from https://code.usgs.gov/wma/nhgf/reference-fabric/hydrolocation-qa-registry/-/releases.
+  tar_target("nwis_qa_gages", get_nwis_qa_data("https://code.usgs.gov/-/project/17454/uploads/b2b5bd699c26e80bf1bacef4bdd0b860/known_hydrolocations.csv")),
   
   # This function downloads and loads a table of NWS forcast sites.
   tar_target("nws_gages", get_nws_data()),
@@ -78,23 +75,8 @@ list(
   ### location normalization ###
   # these targets generate a normalized form set of gages from each source.
   
-  # This Gage layer from NHDPlusV2 is a basic starting point for
-  # NWIS gage locations.
-  tar_target("nhdpv2_gage", select(read_sf(nat_db, "Gage"), 
-                                   nhdpv2_REACHCODE = REACHCODE, 
-                                   nhdpv2_REACH_measure = Measure,
-                                   nhdpv2_COMID = FLComID,
-                                   provider_id = SOURCE_FEA)),
-  
-  tar_target("nwis_hydrolocation", nwis_hydrolocation_csv, format = "file"),
-  tar_target("nwis_gage_hydro_locatons", get_nwis_hydrolocations(nhdpv2_gage,
-                                                                 swims_gage,
-                                                                 gage_locations,
-                                                                 nwis_hydrolocation)),
-  
   tar_target("cdec_gage_address", get_cdec_gage_locations(cdec_gage)),
-  
-  
+
   tar_target("co_gage_address", get_co_gage_locations(co_gage)),
   
   ### Registry ###
@@ -127,7 +109,7 @@ list(
     ref_locations = ref_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
-           locations = nwis_gage_hydro_locatons),
+           locations = nwis_qa_gages),
       list(provider = "https://cdec.water.ca.gov",
            locations = cdec_gage_address),
       list(provider = "https://dwr.state.co.us",
@@ -150,10 +132,9 @@ list(
   tar_target("reference_out", write_reference(gage_hydrologic_locations_with_mainstems, 
                                               registry, providers, reference_file, 
                                               nldi_file,
-                                              duplicate_locations = duplicate_locations)),
-  tar_target("registry_out", write_registry(registry, registry_csv)),
+                                              duplicate_locations = duplicate_locations), format = "file"),
+  tar_target("registry_out", write_registry(registry, registry_csv), format = "file"),
   
-  tar_target("validation", validate_ref_gage(registry_csv, reference_file, 
+  tar_target("validation", validate_ref_gage(registry_out, reference_out, 
                                              reference_locations_csv, 
-                                             providers_lookup_csv,
-                                             reference_out)))
+                                             providers_lookup_csv)))

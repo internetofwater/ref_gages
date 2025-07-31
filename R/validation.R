@@ -1,6 +1,6 @@
 validate_ref_gage <- function(registry_csv, reference_file, 
                               reference_locations_csv, 
-                              providers_lookup_csv, reference_out) {
+                              providers_lookup_csv) {
   
   registry <- read_csv(registry_csv)
 

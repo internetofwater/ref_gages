@@ -22,43 +22,43 @@ graph LR
   style Graph fill:#FFFFFF,stroke:#000000;
   subgraph Graph
     direction LR
-    xdc890725c94814e0(["cdec_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
-    xc790fbbfe941e20f(["co_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
-    x3816fb2c1b52106c(["nwis_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
-    xe86264e228962974(["pnw_gage"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
-    x592b71b0a3906fc3(["streamstats_sites"]):::completed --> xe90cfa4169672250(["gage_locations"]):::completed
-    x86f07777fbb7e7e4(["nhdpv2_gage"]):::completed --> x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed
-    x72e6641d7003f35e(["swims_gage"]):::completed --> x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed
-    xdc890725c94814e0(["cdec_gage"]):::completed --> xc2983822f18540b4(["cdec_gage_address"]):::completed
-    xc2983822f18540b4(["cdec_gage_address"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    x4201776ad8616358(["co_gage_address"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    xe90cfa4169672250(["gage_locations"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    x6c59ac2b7db5bcf8(["nhdpv2_fline_proc"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    x8143934a2d5257e0(["nwis_gage_hydro_locatons"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    xb37ed462743750b6(["ref_locations"]):::completed --> x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed
-    xd20e6d3eb3d2523a(["duplicate_locations"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
-    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
-    x2ed57357c0c06777(["providers"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
-    x7b8f98c0b818a18a(["registry"]):::completed --> x2dd2f719129b7fe6(["reference_out"]):::completed
-    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> xd20e6d3eb3d2523a(["duplicate_locations"]):::completed
-    x7b8f98c0b818a18a(["registry"]):::completed --> x164a1fd6fa5b800d(["registry_out"]):::completed
-    xe90cfa4169672250(["gage_locations"]):::completed --> x7b8f98c0b818a18a(["registry"]):::completed
-    x2ed57357c0c06777(["providers"]):::completed --> x7b8f98c0b818a18a(["registry"]):::completed
-    x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
-    x2ed57357c0c06777(["providers"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
-    x7b8f98c0b818a18a(["registry"]):::completed --> x7e43af43bcccc897(["usgs_reference_out"]):::completed
-    xe90cfa4169672250(["gage_locations"]):::completed --> xb37ed462743750b6(["ref_locations"]):::completed
-    x2ed57357c0c06777(["providers"]):::completed --> xb37ed462743750b6(["ref_locations"]):::completed
-    x2e392e0f2cb78ba1(["gage_hydrologic_locations"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
-    xaa2c6f0a5f97fbb7(["mainstems"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
-    x36d41497a1d9cc73(["vaa"]):::completed --> x7765aace6cda3292(["gage_hydrologic_locations_with_mainstems"]):::completed
-    xc790fbbfe941e20f(["co_gage"]):::completed --> x4201776ad8616358(["co_gage_address"]):::completed
-    x45079be5e9dad71e(["nat_db"]):::completed --> x86f07777fbb7e7e4(["nhdpv2_gage"]):::completed
-    x0d37c0787182d513(["nhdpv2_fline"]):::completed --> x6c59ac2b7db5bcf8(["nhdpv2_fline_proc"]):::completed
-    x60fc93676537b647(["providers_csv"]):::completed --> x2ed57357c0c06777(["providers"]):::completed
-    x45079be5e9dad71e(["nat_db"]):::completed --> x0d37c0787182d513(["nhdpv2_fline"]):::completed
+    x68fd7d2729e8459c(["cdec_gage"]):::uptodate --> x14690c3296417993(["gage_locations"]):::uptodate
+    xc02b3fa6e288c95f(["co_gage"]):::uptodate --> x14690c3296417993(["gage_locations"]):::uptodate
+    x26dbd46269195f71(["nwis_gage"]):::uptodate --> x14690c3296417993(["gage_locations"]):::uptodate
+    x8221330b9bd19285(["pnw_gage"]):::uptodate --> x14690c3296417993(["gage_locations"]):::uptodate
+    xa5c0bb03406aa7a0(["streamstats_sites"]):::uptodate --> x14690c3296417993(["gage_locations"]):::uptodate
+    x68fd7d2729e8459c(["cdec_gage"]):::uptodate --> x75417e6b8a919cb9(["cdec_gage_address"]):::uptodate
+    x75417e6b8a919cb9(["cdec_gage_address"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    x2c545b6cd69230ad(["co_gage_address"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    x14690c3296417993(["gage_locations"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    xcd07b5771d79298c(["nhdpv2_fline_proc"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    xcf9c4895c540caf6(["nwis_qa_gages"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    x851c6bba0e062390(["ref_locations"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    x2aa750ef5905719e(["duplicate_locations"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
+    xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
+    xf515f77fccd1b2cc(["providers"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
+    xa5d81f243d49b74b(["registry"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
+    xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate --> x2aa750ef5905719e(["duplicate_locations"]):::uptodate
+    x14690c3296417993(["gage_locations"]):::uptodate --> xa5d81f243d49b74b(["registry"]):::uptodate
+    xf515f77fccd1b2cc(["providers"]):::uptodate --> xa5d81f243d49b74b(["registry"]):::uptodate
+    xa5d81f243d49b74b(["registry"]):::uptodate --> x3c26915feb6d5453(["registry_out"]):::uptodate
+    xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate --> x9423f5225a1fe63d(["usgs_reference_out"]):::uptodate
+    xf515f77fccd1b2cc(["providers"]):::uptodate --> x9423f5225a1fe63d(["usgs_reference_out"]):::uptodate
+    xa5d81f243d49b74b(["registry"]):::uptodate --> x9423f5225a1fe63d(["usgs_reference_out"]):::uptodate
+    x14690c3296417993(["gage_locations"]):::uptodate --> x851c6bba0e062390(["ref_locations"]):::uptodate
+    xf515f77fccd1b2cc(["providers"]):::uptodate --> x851c6bba0e062390(["ref_locations"]):::uptodate
+    x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate --> xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate
+    x62f64b5e1492705f(["mainstems"]):::uptodate --> xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate
+    xcaf37b018c5051fa(["nws_gages"]):::uptodate --> xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate
+    x3e10572866348fbd(["vaa"]):::uptodate --> xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate
+    xc02b3fa6e288c95f(["co_gage"]):::uptodate --> x2c545b6cd69230ad(["co_gage_address"]):::uptodate
+    xaa36b9c75449da58(["nhdpv2_fline"]):::uptodate --> xcd07b5771d79298c(["nhdpv2_fline_proc"]):::uptodate
+    x96d1384a6f25eeca(["reference_out"]):::uptodate --> xd1529679f089b8ed(["validation"]):::uptodate
+    x3c26915feb6d5453(["registry_out"]):::uptodate --> xd1529679f089b8ed(["validation"]):::uptodate
+    x17318bfe07205f04(["providers_csv"]):::uptodate --> xf515f77fccd1b2cc(["providers"]):::uptodate
+    xcc0828d76b923a09(["nat_db"]):::uptodate --> xaa36b9c75449da58(["nhdpv2_fline"]):::uptodate
   end
-  classDef completed stroke:#000000,color:#000000,fill:#85F1FF;
+  classDef uptodate stroke:#000000,color:#000000,fill:#85F1FF;
 ```
 
 # Architecture

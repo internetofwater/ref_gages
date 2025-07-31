@@ -123,60 +123,6 @@ get_co_gage_locations <- function(gages) {
   
 }
 
-get_nwis_hydrolocations <- function(nhdpv2_gage, 
-                                    swim_gage,
-                                    gage_locations,
-                                    nwis_hydrolocation) {
-  
-  nh <- read.csv(nwis_hydrolocation, colClasses = c("character", 
-                                                    "integer", 
-                                                    "character", 
-                                                    "numeric"))
-  
-  nh <- mutate(nh, nhdpv2_link_source = "https://github.com/internetofwater/ref_gages/blob/main/data/nwis_hydrolocations.csv")
-  
-  if(any(swim_gage$Gage_no %in% nh$provider_id)) stop("duplicates in override registry")
-  
-  check <- swim_gage |>
-    bind_cols(sf::st_coordinates(sf::st_transform(swim_gage, 5070)))|>
-    select(Gage_no, x_swim = X, y_swim = Y) |>
-    sf::st_drop_geometry() |>
-    left_join(select(gage_locations, provider_id), 
-              by = c("Gage_no" = "provider_id")) |>
-    sf::st_sf()
-  
-  check <- check |>
-    bind_cols(sf::st_coordinates(sf::st_transform(check, 5070))) |>
-    rename(x_nwis = X, y_nwis = Y) |>
-    sf::st_drop_geometry()
-  
-  check <- mutate(check, dist = sqrt((y_nwis - y_swim)^2 + (x_nwis - x_swim)^2))
-  
-  dontuse <- check$Gage_no[check$dist > 1000]
-  
-  swim_gage <- mutate(swim_gage, 
-                      COMID = ifelse(COMID == -9999, NA, COMID), 
-                      REACHCODE = ifelse(REACHCODE == -9999, NA, REACHCODE), 
-                      REACH_meas = ifelse(REACH_meas == -9999, NA, REACH_meas))
-  
-  swim_gage <- sf::st_drop_geometry(swim_gage) |>
-    filter(!Gage_no %in% dontuse) |>
-    select(provider_id = Gage_no, 
-           nhdpv2_COMID = COMID,
-           nhdpv2_REACHCODE = REACHCODE,
-           nhdpv2_REACH_measure = REACH_meas) |>
-    mutate(nhdpv2_link_source = "https://doi.org/10.5066/P9J5CK2Y")
-
-  nh <- bind_rows(nh, swim_gage)
-  
-  nhdpv2_gage <- filter(st_drop_geometry(nhdpv2_gage), 
-                        !provider_id %in% nh$provider_id) |>
-    mutate(nhdpv2_link_source = "https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus")
-  
-  bind_rows(nhdpv2_gage, nh)
-  
-}
-
 #' hydrologic locations
 #' @description takes all gages from this run and all pre-determined hydrologic locations
 #' determines the "best" hydrologic location for each gage and snaps to NHDPlusV2
