@@ -48,7 +48,7 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
   unlink(nldi_file)
   write_sf(out, nldi_file)
   
-  out
+  reference_file
 }
 
 write_usgs_reference <- function(gage_hydrologic_locations, registry, providers, usgs_reference_file, usgs_nldi_file) {

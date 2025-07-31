@@ -94,37 +94,16 @@ get_pnw_data <- function() {
   list(data = d, providers = p)
 }
 
-get_swim_data <- function() {
-  sb <- "5ebe92af82ce476925e44b8f"
+get_nwis_qa_data <- function(file = "https://url") {
   
   out_dir <- tempdir(check = TRUE)
   
-  item <- item_get(sb)
+  out_file <- file.path(out_dir, basename(file))
   
-  facet_files <- 
-    lapply(item$facets, function(x) 
-    {
-      list(name = x$name, 
-           files = lapply(x$files, function(y, out_path)
-           {
-             
-             out_file <- file.path(out_path, y$name)
-             dir.create(out_path, showWarnings = FALSE, recursive = TRUE)
-             download.file(y$downloadUri, out_file, mode = "wb")
-             
-             list(fname = y$name,
-                  url = y$downloadUri,
-                  path = out_file)
-             
-           }, 
-           out_path = file.path(out_dir, x$name)))
-    })
+  dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+  download.file(file, out_file, mode = "wb")
   
-  shp <- sapply(facet_files[[1]]$files, function(x) x$path)
-  
-  shp <- shp[grepl("shp$", shp)]
-  
-  sf::read_sf(shp)
+  readr::read_csv(out_file)
   
 }
 
