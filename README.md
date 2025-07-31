@@ -32,7 +32,7 @@ graph LR
     x2c545b6cd69230ad(["co_gage_address"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
     x14690c3296417993(["gage_locations"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
     xcd07b5771d79298c(["nhdpv2_fline_proc"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
-    xcf9c4895c540caf6(["qa_gages"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
+    xcf9c4895c540caf6(["nwis_qa_gages"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
     x851c6bba0e062390(["ref_locations"]):::uptodate --> x9f75c3a258e544f6(["gage_hydrologic_locations"]):::uptodate
     x2aa750ef5905719e(["duplicate_locations"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
     xfe50b36338a451f2(["gage_hydrologic_locations_with_mainstems"]):::uptodate --> x96d1384a6f25eeca(["reference_out"]):::uptodate
