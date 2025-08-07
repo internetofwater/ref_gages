@@ -1,7 +1,7 @@
 library(targets)
 
 tar_option_set(packages = c("nhdplusTools", "sf", "dplyr", "dataRetrieval", 
-                            "sbtools", "readr", "knitr", "mapview", "data.table"),
+                            "sbtools", "readr", "knitr", "mapview", "data.table", "gagematcher"),
                memory = "transient", garbage_collection = TRUE)
 
 # primary output file for geoconnex reference server
@@ -35,7 +35,7 @@ list(
   # Only the network flowlines for now -- non-network could be pulled in.
   tar_target("nhdpv2_fline", read_sf(nat_db, "NHDFlowline_Network")),
   tar_target("nhdpv2_fline_proc", select(st_transform(nhdpv2_fline, 5070),
-                                        COMID, REACHCODE, ToMeas, FromMeas)),
+                                        comid = COMID, reachcode = REACHCODE, tomeas = ToMeas, frommeas = FromMeas)),
   tar_target("mainstems", get_all_mainstems("data/mainstems/")),
   tar_target("vaa", get_vaa(atts = c("comid", "levelpathi", "hydroseq"),
                            updated_network = TRUE)),
@@ -105,7 +105,8 @@ list(
   # The order that hydrologic locations sources are provided will determine
   # precidence -- last defined wins.
   tar_target("gage_hydrologic_locations", get_hydrologic_locations(
-    all_gages = gage_locations,
+    input_locations = gage_locations,
+    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc),
     ref_locations = ref_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
@@ -114,7 +115,8 @@ list(
            locations = cdec_gage_address),
       list(provider = "https://dwr.state.co.us",
            locations = co_gage_address)),
-    nhdpv2_fline = sf::st_zm(nhdpv2_fline_proc))),
+     providers = providers, 
+     new_link_source = "https://github.com/internetofwater/ref_gages")),
   
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems_and_nws(gage_hydrologic_locations,
                                                                        mainstems, vaa, nws_gages)),
