@@ -105,7 +105,8 @@ get_cdec_gage_locations <- function(gages) {
     filter(provider == "https://cdec.water.ca.gov") |>
     select(nhdpv2_REACHCODE = rchcd_medres,
            nhdpv2_COMID = comid_medres,
-           provider_id = id) |>
+           provider_id = id,
+           provider = provider) |>
     mutate(nhdpv2_REACH_measure = rep(NA_real_, n()),
            nhdpv2_COMID = as.numeric(nhdpv2_COMID),
            nhdpv2_link_source = "https://cdec.water.ca.gov")
@@ -119,7 +120,8 @@ get_co_gage_locations <- function(gages) {
     mutate(nhdpv2_REACHCODE = rep(NA_character_, n()),
            nhdpv2_COMID = rep(NA_integer_, n()),
            nhdpv2_REACH_measure = rep(NA_real_, n()),
-           nhdpv2_link_source = rep(NA_character_, n()))
+           nhdpv2_link_source = rep(NA_character_, n()),
+           provider = rep("https://dwr.state.co.us", n()))
   
 }
 
