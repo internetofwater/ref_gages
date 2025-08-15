@@ -103,8 +103,13 @@ get_nwis_qa_data <- function(file = "https://url") {
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
   download.file(file, out_file, mode = "wb")
   
-  readr::read_csv(out_file)
+  out <- readr::read_csv(out_file)
   
+  group_by(out, provider, provider_id) |>
+    filter(row_number() == 1) |>
+    ungroup() |>
+    mutate(provider = "https://waterdata.usgs.gov")
+
 }
 
 get_all_mainstems <- function(outdir) {

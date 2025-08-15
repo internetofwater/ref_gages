@@ -35,7 +35,7 @@ list(
   # Only the network flowlines for now -- non-network could be pulled in.
   tar_target("nhdpv2_fline", read_sf(nat_db, "NHDFlowline_Network")),
   tar_target("nhdpv2_fline_proc", select(st_transform(nhdpv2_fline, 5070),
-                                        comid = COMID, reachcode = REACHCODE, tomeas = ToMeas, frommeas = FromMeas)),
+                                        comid = COMID, reachcode = REACHCODE, tomeas = ToMeas, frommeas = FromMeas, totdasqkm = TotDASqKM, levelpathi = LevelPathI)),
   tar_target("mainstems", get_all_mainstems("data/mainstems/")),
   tar_target("vaa", get_vaa(atts = c("comid", "levelpathi", "hydroseq"),
                            updated_network = TRUE)),
@@ -58,7 +58,7 @@ list(
   tar_target("streamstats_sites", get_streamstats_sites()),
   
   # This function loads the SWIMS gage locations and other gage locations from https://code.usgs.gov/wma/nhgf/reference-fabric/hydrolocation-qa-registry/-/releases.
-  tar_target("nwis_qa_gages", get_nwis_qa_data("https://code.usgs.gov/-/project/17454/uploads/b2b5bd699c26e80bf1bacef4bdd0b860/known_hydrolocations.csv")),
+  tar_target("nwis_qa_gages", get_nwis_qa_data("https://code.usgs.gov/wma/nhgf/reference-fabric/hydrolocation-qa-registry/-/package_files/16613/download")),
   
   # This function downloads and loads a table of NWS forcast sites.
   tar_target("nws_gages", get_nws_data()),
@@ -110,14 +110,12 @@ list(
     ref_locations = ref_locations,
     hydrologic_locations = list(
       list(provider = "https://waterdata.usgs.gov",
-           locations = nwis_qa_gages),
+           locations = sf::st_drop_geometry(select(nwis_qa_gages, -nhdpv2_totdasqkm))),
       list(provider = "https://cdec.water.ca.gov",
-           locations = cdec_gage_address),
+           locations = sf::st_drop_geometry(cdec_gage_address)),
       list(provider = "https://dwr.state.co.us",
-           locations = co_gage_address)),
-     providers = providers, 
+           locations = sf::st_drop_geometry(co_gage_address))),
      new_link_source = "https://github.com/internetofwater/ref_gages")),
-  
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems_and_nws(gage_hydrologic_locations,
                                                                        mainstems, vaa, nws_gages)),
   
