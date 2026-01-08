@@ -42,7 +42,19 @@ list(
   
   ### Downloaders ###
   # This function downloads all NWIS sites from the site file
-  tar_target("nwis_gage", get_nwis_sites()),
+  tar_target(
+    "nwis_gage",
+    dataRetrieval::read_waterdata_monitoring_location(
+      site_type_code = c("ST", "ST-CA", "ST-DCH", "ST-TS", "ES", "LK"),
+      properties = c(
+        "id",
+        "monitoring_location_number",
+        "monitoring_location_name",
+        "drainage_area"
+      ),
+      limit = 50000
+    )
+  ),
   
   # This function downloads all cdec sites
   tar_target("cdec_gage", get_cdec_data()),
