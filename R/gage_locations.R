@@ -4,29 +4,40 @@ get_gage_locations <- function(nwis_gage, streamstats_sites, cdec_gage, co_gage,
   
   sqmi_to_sqkm <- 2.58999
   
-  gages <- dplyr::filter(nwis_gage, (site_tp_cd == "ST" | 
-                                       site_tp_cd == "ST-CA" |
-                                       site_tp_cd == "ST-DCH" |
-                                       site_tp_cd == "ST-TS" |
-                                       site_tp_cd == "ES" |
-                                       site_tp_cd == "LK") & 
-                           !is.na(dec_long_va) & 
-                           !is.na(dec_lat_va)) |>
-    select(dec_lat_va, dec_long_va, site_no, station_nm, site_no, drain_area_va) |>
-    group_by(site_no) |> arrange(drain_area_va) |>
-    filter(n() == 1) |> ungroup() |>
-    st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = 4326) |>
-    mutate(description = paste0("USGS NWIS Stream/River/Lake Site ", site_no, ": ", station_nm),
-           subjectOf = paste0("https://waterdata.usgs.gov/monitoring-location/", site_no),
-           provider = "https://waterdata.usgs.gov",
-           provider_id = site_no,
-           drainage_area_sqkm = (as.numeric(drain_area_va) * sqmi_to_sqkm)) |>
-    select(name = station_nm, 
-           description,
-           subjectOf,
-           provider,
-           provider_id,
-           drainage_area_sqkm)
+  gages <- nwis_gage |>
+    dplyr::filter(!sf::st_is_empty(geometry)) |>
+    transmute(
+      site_no = id,
+      station_nm = monitoring_location_name,
+      drain_area_va = drainage_area
+    ) |>
+    group_by(site_no) |>
+    arrange(drain_area_va) |>
+    filter(n() == 1) |>
+    ungroup() |>
+    mutate(
+      description = paste0(
+        "USGS NWIS Stream/River/Lake Site ",
+        site_no,
+        ": ",
+        station_nm
+      ),
+      subjectOf = paste0(
+        "https://waterdata.usgs.gov/monitoring-location/",
+        site_no
+      ),
+      provider = "https://waterdata.usgs.gov",
+      provider_id = site_no,
+      drainage_area_sqkm = (as.numeric(drain_area_va) * sqmi_to_sqkm)
+    ) |>
+    select(
+      name = station_nm,
+      description,
+      subjectOf,
+      provider,
+      provider_id,
+      drainage_area_sqkm
+    )
   
   c_gage <- cdec_gage |>
     mutate(description = paste("Stream Type:", ucdstrmclass, "Status:", sitestatus)) |>
