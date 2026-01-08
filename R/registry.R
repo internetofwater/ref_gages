@@ -100,7 +100,7 @@ build_reference_location <- function(gl, reference_locations, registry, provider
   
   write_csv(out, reference_locations)
   
-  out$providers <- providers$provider[out$provider]
+  out$provider <- providers$provider[out$provider]
  
   out
 }
