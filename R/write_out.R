@@ -70,8 +70,6 @@ write_usgs_reference <- function(gage_hydrologic_locations, registry, providers,
   out$id <- out$provider_id
   out$uri <- paste0("https://geoconnex.us/usgs/monitoring-location/", out$id)
   
-  out$provider_id <- paste0("USGS-", out$provider_id)
-  
   write_sf(out, usgs_reference_file)
   
   unlink(usgs_nldi_file)
