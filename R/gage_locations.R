@@ -136,7 +136,23 @@ get_co_gage_locations <- function(gages) {
   
 }
 
-add_mainstems_and_nws <- function(gage_hydrologic_locations, mainstems, vaa, nws_gages) {
+add_mainstems_and_nws <- function(gage_hydrologic_locations, mainstems, vaa, nws_gages, hivis_cameras) {
+  
+  hivis_cameras <- lapply(hivis_cameras, \(x) {
+    if("nwisId" %in% names(x)) {
+      if(!is.null(x$nwisId) & x$nwisId != "") {
+        if(!is.null(x$hideCam) & !isTRUE(x$hideCam)) {
+          return(list(camId = x$camId, nwisId = x$nwisId))
+        }
+      }
+    }
+    NULL
+  }) |> dplyr::bind_rows() |>
+    mutate(hivis_url = paste0("https://apps.usgs.gov/hivis/camera/", camId))
+  
+  if(!any(grepl("USGS-", hivis_cameras$nwisId))) {
+    hivis_cameras$nwisId <- paste0("USGS-", hivis_cameras$nwisId)
+  }
   
   mainstems <- mainstems[,c("head_nhdpv2_COMID", "uri"), drop = TRUE]
   mainstems$head_nhdpv2_COMID <- as.integer(gsub("https://geoconnex.us/nhdplusv2/comid/", "", 
@@ -156,6 +172,10 @@ add_mainstems_and_nws <- function(gage_hydrologic_locations, mainstems, vaa, nws
   
   out <- dplyr::left_join(gage_hydrologic_locations, mainstem_lookup, by = c("nhdpv2_COMID" = "comid"))
   
+  if(!any(grepl("USGS-", nws_gages$`usgs id`))) {
+    nws_gages$`usgs id` <- paste0("USGS-", nws_gages$`usgs id`)
+  }
+  
   nws_table <- nws_gages |>
     dplyr::filter(grepl("geological|usgs", `attribution wording`, ignore.case = TRUE) & !is.na(`usgs id`)) |>
     dplyr::select(usgs_id = `usgs id`, nws_url = `hydrograph page`) |>
@@ -165,6 +185,16 @@ add_mainstems_and_nws <- function(gage_hydrologic_locations, mainstems, vaa, nws
   
   out <- dplyr::left_join(out, nws_table, by = c("provider_id" = "usgs_id"))
 
+  hivis_cameras <- distinct(hivis_cameras)
+  
+  if(any(duplicated(hivis_cameras$nwisId))) {
+    hivis_cameras <- group_by(hivis_cameras, nwisId) |>
+      summarise(hivis_url = list(unique(.data$hivis_url)))
+  }
+  
+  out <- dplyr::left_join(out, dplyr::select(hivis_cameras, usgs_id = nwisId, hivis_camera_url = hivis_url),
+                          by = c("provider_id" = "usgs_id"))
+  
   out
 }
 

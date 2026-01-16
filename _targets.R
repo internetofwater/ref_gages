@@ -75,6 +75,9 @@ list(
   # This function downloads and loads a table of NWS forcast sites.
   tar_target("nws_gages", get_nws_data()),
   
+  # this function downloads and loads a table of stream gage cameras
+  tar_target("hivis_cameras", get_hivis_links()),
+  
   ### metadata integration ###
   # this function filters and renames gage locations to a common table
   # It does not handle location information and duplicates are fine at this stage.
@@ -129,7 +132,7 @@ list(
            locations = sf::st_drop_geometry(co_gage_address))),
      new_link_source = "https://github.com/internetofwater/ref_gages")),
   tar_target("gage_hydrologic_locations_with_mainstems", add_mainstems_and_nws(gage_hydrologic_locations,
-                                                                       mainstems, vaa, nws_gages)),
+                                                                       mainstems, vaa, nws_gages, hivis_cameras)),
   
   # based on all known gages from all providers, find potential duplicates.
   # starts by finding gages within 100m of eachother then checks if they are on different flowlines.
