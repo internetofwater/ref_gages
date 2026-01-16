@@ -31,6 +31,11 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
     paste(x, collapse = ",")
   }))
   
+  out$hivis_camera_url <- unlist(lapply(out$hivis_camera_url, \(x) {
+    if(is.null(x)) return(NA_character_)
+    paste(x, collapse = ",")
+  }))
+  
   out <- out |>
     left_join(select(convert_provider_id(registry, providers), 
                      uri, identifier, id), by = "identifier") %>%
@@ -39,7 +44,7 @@ write_reference <- function(gage_hydrologic_locations, registry, providers, refe
            nhdpv2_REACH_measure, nhdpv2_COMID, nhdpv2_totdasqkm, 
            nhdpv2_link_source, nhdpv2_offset_m,
            gage_totdasqkm = drainage_area_sqkm, 
-           dasqkm_diff = da_diff, mainstem_uri, nws_url) %>%
+           dasqkm_diff = da_diff, mainstem_uri, nws_url, hivis_camera_url) %>%
     mutate(id = as.integer(id)) |>
     left_join(dup, by = "uri")
   

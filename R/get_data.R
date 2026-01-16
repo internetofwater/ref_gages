@@ -116,3 +116,14 @@ get_nws_data <- function() {
   
   readr::read_csv(url)
 }
+
+get_hivis_links <- function() {
+  
+  # Base configuration from your prompt
+  nims_base_url <- "https://api.waterdata.usgs.gov/nims/v0"
+  cameras_endpoint <- "/cameras" 
+  
+  jsonlite::read_json(paste0(nims_base_url, cameras_endpoint))
+
+    
+}
