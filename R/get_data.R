@@ -93,7 +93,8 @@ get_nwis_qa_data <- function(file = "https://url") {
   group_by(out, provider, provider_id) |>
     filter(row_number() == 1) |>
     ungroup() |>
-    mutate(provider = "https://waterdata.usgs.gov")
+    mutate(provider = "https://waterdata.usgs.gov") |>
+    mutate(provider_id = paste0("USGS-", provider_id))
 
 }
 
