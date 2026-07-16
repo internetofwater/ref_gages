@@ -108,9 +108,9 @@ list(
   
   # Also create a table of reference locations for the registered gages.
   # unlike the registry, this may update to have the "best" location of a gage. 
-  tar_target("ref_locations", build_reference_location(gage_locations, 
-                                                       reference_locations = reference_locations_csv, 
-                                                       registry = registry_csv, 
+  tar_target("ref_locations", build_reference_location(gage_locations,
+                                                       reference_locations = reference_locations_csv,
+                                                       registry = registry,
                                                        providers = providers)),
   
   ### spatial integration ###
