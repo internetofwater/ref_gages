@@ -72,8 +72,8 @@ get_registry <- function(registry = "reg/ref_gages.csv",
 #' @description builds a table of reference locations for gages in the registry
 build_reference_location <- function(gl, reference_locations, registry, providers) {
  
-  # all registry points from current run
-  reg <- read_csv(registry)
+  # all registry points from current run (the registry target, with new ids assigned)
+  reg <- registry
 
   # get our current run gage locations into registry form
   gl <- left_join(gl, select(providers, provider_int = id, provider), by = "provider")

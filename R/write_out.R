@@ -64,7 +64,7 @@ write_usgs_reference <- function(gage_hydrologic_locations, registry, providers,
                      uri, identifier, id), by = "identifier") %>%
     filter(provider == "https://waterdata.usgs.gov") %>%
     select(id, uri, name, description, subjectOf, provider, provider_id, 
-           nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID) %>%
+           nhdpv2_REACHCODE, nhdpv2_REACH_measure, nhdpv2_COMID, mainstem_uri) %>%
     mutate(id = as.integer(id))
   
   out$id <- out$provider_id
